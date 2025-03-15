@@ -9,14 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@googlemaps/js-api-loader": "^1.16.8",
     "awesome-streetview": "^1.4.2",
-    "google-panorama-by-location": "^4.1.1",
     "next": "15.2.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-google-streetview": "^0.0.9",
-    "react-streetview": "^1.1.1"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
