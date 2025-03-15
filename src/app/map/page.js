@@ -1,4 +1,3 @@
-"use client";
 var streetview = require('awesome-streetview')
 
 
@@ -36,7 +35,7 @@ let createURL = () => {
   //THIS IS TO BE EDITED LATER
   let place = streetview();
 
-  let APIKEY = "AIzaSyAyxozC-4Oof9XzK0pV6tXm5vyukNwLzzA";
+  let APIKEY = process.env.GOOGLE_MAPS_API_KEY;
   let lat = place[0];
   let lon = place[1];
 
