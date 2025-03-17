@@ -5,8 +5,6 @@ import { useEffect, useState } from "react";
 export default function StreetView({ url }) {
     const [isClient, setIsClient] = useState(false);
 
-    console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
-    console.log(url);
 
     useEffect(() => {
         setIsClient(true);
