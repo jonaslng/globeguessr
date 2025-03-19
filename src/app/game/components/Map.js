@@ -45,42 +45,44 @@ const MapWithStreetView = ({ setGuessed }) => {
             keyboard: true,
             zoom: 2,
             attributionControl: false,
-            }).setView([20, 0], 1);
+            zoomControl: false,
+            worldCopyJump: true,
+            }).setView([20, 0], 2);
 
           L.gridLayer.googleMutant({type: "hybrid", disableDefaultUI: true, zoomControl: false}).addTo(newMap);
 
-          setTimeout(() => {
-            newMap.invalidateSize(); // 🛠️ Korrekturen für das Rendering
-          }, 500);
+
+          setMap(newMap);
 
           // ZUR NOT L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}).addTo(newMap);
 
-          setMap(newMap);
         }
       });
     }
   }, [map]);
 
+  // ** Event-Listener für das Klicken auf die Karte
   if (map !== null) {
     map.on("click", (e) => {
+
+      
+      
       setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
 
       // Setze einen neuen Marker an die angeklickte Stelle
       const markerIcon = new L.Icon({
         iconUrl: "/leaflet/marker_2.png",
-        iconSize: [32, 40],
+        iconSize: [30, 36],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowSize: [41, 41],
       });
-      const newMarker = L.marker([e.latlng.lat, e.latlng.lng], {icon: markerIcon}).addTo(map);
+      const newMarker = L.marker([e.latlng.lat, e.latlng.lng], {icon: markerIcon}).addTo(map).bindTooltip("Deine Vermutung", {direction: "top", offset: [3, -40]}).openTooltip();
       setMarker(newMarker);
-      setGuessed(true);
     });
   }
 
-  //HOVER ÄNDERUNG
-
+  // ** Dynamisches Re-Rendering der Karte bei Hover-Effekten 
   useEffect(() => {
     const handleResize = () => {
       if (map) {
@@ -107,7 +109,7 @@ const MapWithStreetView = ({ setGuessed }) => {
 
   return (
     <div>
-      {coords && marker ? <></> : <div ref={mapRef} id="map" className="h-[30vh] w-[30vw] rounded-lg shadow-md transition-all hover:h-[35vh] hover:w-[60vw] border-none focus:border-none"></div>}
+      <div ref={mapRef} id="map" className="h-[35vh] w-[35vw] opacity-75 rounded-md shadow-md transition-all hover:h-[55vh] hover:w-[70vw] hover:opacity-100 border-none focus:border-none"></div>
     </div>
   );
 };

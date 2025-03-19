@@ -24,7 +24,7 @@ export default function Game() {
                 <div className="flex flex-col items-center w-full h-screen overflow-hidden">
                     <div>
                         <StreetView url={url} />
-                        <div className="left-0 bottom-0 fixed mb-[40px] ml-[55px]">
+                        <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
                             <Map setGuessed={(g) => setGuessed(g)} />
                         </div>
                     </div>
