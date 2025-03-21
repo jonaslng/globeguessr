@@ -9,6 +9,7 @@ const L = typeof window !== "undefined" ? require("leaflet") : null;
 if (L) {
   require("leaflet.gridlayer.googlemutant"); // Importieren des Plugins
 }
+
 const loadGoogleMapsScript = (callback) => {
   const existingScript = document.getElementById('googleMaps');
 
@@ -26,20 +27,25 @@ const loadGoogleMapsScript = (callback) => {
   if (existingScript && callback) callback();
 };
 
-
-
-const MapWithStreetView = ({ setGuessed }) => {
+const MapWithStreetView = ({ setGuessed, pro = false }) => {
   const [map, setMap] = useState(null);
   const [coords, setCoords] = useState(null);
-  const [marker, setMarker] = useState(null);
+  const markerRef = useRef(null); // Verwenden Sie ein Ref für den Marker
   const mapRef = useRef(null);
+
+  const handleGuessed = () => {
+    if (markerRef.current !== null) {
+      map.removeLayer(markerRef.current);
+      setGuessed(true);
+    }
+  }
 
 
   useEffect(() => {
     if (typeof window !== "undefined" && L) {  // ✅ Sicherstellen, dass window existiert
       loadGoogleMapsScript(() => {
         if (!map) {
-            const newMap = L.map(mapRef.current, {
+          const newMap = L.map(mapRef.current, {
             dragging: true,
             doubleClickZoom: true,
             keyboard: true,
@@ -47,71 +53,90 @@ const MapWithStreetView = ({ setGuessed }) => {
             attributionControl: false,
             zoomControl: false,
             worldCopyJump: true,
-            }).setView([20, 0], 2);
+          }).setView([20, 0], 2);
 
-          L.gridLayer.googleMutant({type: "hybrid", disableDefaultUI: true, zoomControl: false}).addTo(newMap);
-
+          L.gridLayer.googleMutant({ type: "hybrid", disableDefaultUI: true, zoomControl: false }).addTo(newMap);
 
           setMap(newMap);
-
-          // ZUR NOT L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}).addTo(newMap);
-
         }
       });
     }
   }, [map]);
 
-  // ** Event-Listener für das Klicken auf die Karte
-  if (map !== null) {
-    map.on("click", (e) => {
+  useEffect(() => {
+    if (map) {
+      map.on("click", (e) => {
+        const { lat, lng } = e.latlng;
 
-      
-      
-      setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+        // Entferne den alten Marker, falls er existiert
+        if (markerRef.current) {
+          map.removeLayer(markerRef.current);
+        }
 
-      // Setze einen neuen Marker an die angeklickte Stelle
-      const markerIcon = new L.Icon({
-        iconUrl: "/leaflet/marker_2.png",
-        iconSize: [30, 36],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
+        // Setze einen neuen Marker an die angeklickte Stelle
+        const markerIcon = new L.Icon({
+          iconUrl: "/leaflet/marker_2.png",
+          iconSize: (pro ? [30, 38] : [35, 41]),
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        });
+
+        const newMarker = L.marker([lat, lng], { icon: markerIcon })
+          .addTo(map)
+
+        // Speichere den neuen Marker im Ref
+        markerRef.current = newMarker;
+
+        // Aktualisiere die Koordinaten
+        setCoords({ lat, lng });
       });
-      const newMarker = L.marker([e.latlng.lat, e.latlng.lng], {icon: markerIcon}).addTo(map).bindTooltip("Deine Vermutung", {direction: "top", offset: [3, -40]}).openTooltip();
-      setMarker(newMarker);
-    });
-  }
+    }
+  }, [map, setGuessed]);
 
-  // ** Dynamisches Re-Rendering der Karte bei Hover-Effekten 
+
+  console.log("Coords update:", coords);
+
+  // Überwache die Größe des Containers und passe die Karte an
   useEffect(() => {
     const handleResize = () => {
       if (map) {
-        setTimeout(() => {
-          map.invalidateSize();
-        }, 100); // ⏳ Kleine Verzögerung für das Re-Rendering
+        map.invalidateSize(); // Aktualisiere die Kartengröße
       }
     };
 
-    const container = mapRef.current;
-    if (container) {
-      container.addEventListener("mouseenter", handleResize);
-      container.addEventListener("mouseleave", handleResize);
+    // Füge einen Resize-Observer hinzu
+    const observer = new ResizeObserver(handleResize);
+    if (mapRef.current) {
+      observer.observe(mapRef.current);
     }
 
     return () => {
-      if (container) {
-        container.removeEventListener("mouseenter", handleResize);
-        container.removeEventListener("mouseleave", handleResize);
+      if (mapRef.current) {
+        observer.unobserve(mapRef.current);
       }
     };
   }, [map]);
 
-
   return (
-    <div>
-      <div ref={mapRef} id="map" className="h-[35vh] w-[35vw] opacity-75 rounded-md shadow-md transition-all hover:h-[55vh] hover:w-[70vw] hover:opacity-100 border-none focus:border-none"></div>
+    <div className="flex flex-col items-end justify-around group rounded-md">
+      <div
+        ref={mapRef}
+        id="map"
+        className={`h-[35vh] w-[35vw] opacity-75 transition-all ${pro ? `duration-100`: `duration-300`} group-hover:h-[55vh] group-hover:w-[70vw] group-hover:opacity-100 border-none focus:border-none`}
+      ></div>
+      {markerRef.current !== null ? <BTN onClick={() => handleGuessed()} /> : null}
+      
     </div>
   );
 };
+
+const BTN = ({ onClick }) => {
+  return (
+    <button onClick={onClick} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 w-full h-[6vh]">
+      Guess
+    </button>
+  );
+}
 
 export default MapWithStreetView;
