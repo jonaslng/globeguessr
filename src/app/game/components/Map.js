@@ -27,7 +27,7 @@ const loadGoogleMapsScript = (callback) => {
   if (existingScript && callback) callback();
 };
 
-const MapWithStreetView = ({ setGuessed, pro = false }) => {
+const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
   const [map, setMap] = useState(null);
   const [coords, setCoords] = useState(null);
   const markerRef = useRef(null); // Verwenden Sie ein Ref für den Marker
@@ -36,6 +36,7 @@ const MapWithStreetView = ({ setGuessed, pro = false }) => {
   const handleGuessed = () => {
     if (markerRef.current !== null) {
       map.removeLayer(markerRef.current);
+      setUserCoords(coords);
       setGuessed(true);
     }
   }

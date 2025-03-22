@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { createMapURL } from "./_utilities";
 import Map from "./components/Map";
 import StreetView from "./components/StreetView";
+import Solution from "./components/Solution";
 
 export default function Game() {
-    let data = createMapURL();
-    let url = data.url;
+    const [data, setData] = useState(createMapURL());
+    const [userCoords, setUserCoords] = useState(null);
     const [guessed, setGuessed] = useState(false);
     const [step, setStep] = useState(0);
 
@@ -30,29 +31,29 @@ export default function Game() {
 
     return (
         <>
-            {step === 0 ? <Guessing setGuessed={(g) => setGuessed(g)} url={url} /> : <Guessed setGuessed={(g) => setGuessed(g)} />}
+            {step === 0 ? <Guessing setGuessed={(g) => setGuessed(g)} url={data.url} setCoords={(c) => setUserCoords(c)} /> : <Guessed setGuessed={(g) => setGuessed(g)} userCoords={userCoords} solutionCoords={data} />}
         </>
     )
 
 }
 
-const Guessing = ({ setGuessed, url }) => {
+const Guessing = ({ setGuessed, setCoords, url }) => {
     return (
         <div className="flex flex-col items-center w-full h-screen overflow-hidden">
             <div>
                 <StreetView url={url} />
                 <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
-                    <Map setGuessed={(g) => setGuessed(g)} />
+                    <Map setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
                 </div>
             </div>
         </div>
     )
 }
 
-const Guessed = ({ setGuessed }) => {
+const Guessed = ({ setGuessed, userCoords, solutionCoords }) => {
     return (
         <>
-            <p>Du warst ...km entfernt (under construction) </p>
+            <Solution userCoords={userCoords} solutionCoords={solutionCoords} />
         </>
     )
 }
