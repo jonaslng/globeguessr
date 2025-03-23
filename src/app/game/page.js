@@ -29,9 +29,17 @@ export default function Game() {
         }
     }, [guessed]);
 
+    let handleGuessed = () => {
+        console.log("neues Streetview-Bild wird geladen");
+        setUserCoords(null);
+        setData(createMapURL());
+        setStep(0);
+        setGuessed(false);
+    }
+
     return (
         <>
-            {step === 0 ? <Guessing setGuessed={(g) => setGuessed(g)} url={data.url} setCoords={(c) => setUserCoords(c)} /> : <Guessed setGuessed={(g) => setGuessed(g)} userCoords={userCoords} solutionCoords={data} />}
+            {step === 0 ? <Guessing setGuessed={(g) => setGuessed(g)} url={data.url} setCoords={(c) => setUserCoords(c)} /> : <Guessed setGuessed={(g) => setGuessed(g)} userCoords={userCoords} solutionCoords={data} handleGuessed={() => handleGuessed()} />}
         </>
     )
 
@@ -50,10 +58,10 @@ const Guessing = ({ setGuessed, setCoords, url }) => {
     )
 }
 
-const Guessed = ({ setGuessed, userCoords, solutionCoords }) => {
+const Guessed = ({ setGuessed, userCoords, solutionCoords, handleGuessed }) => {
     return (
         <>
-            <Solution userCoords={userCoords} solutionCoords={solutionCoords} />
+            <Solution userCoords={userCoords} solutionCoords={solutionCoords} handleclick={() => handleGuessed()} />
         </>
     )
 }

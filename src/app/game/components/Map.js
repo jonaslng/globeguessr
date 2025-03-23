@@ -32,6 +32,7 @@ const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
   const [coords, setCoords] = useState(null);
   const markerRef = useRef(null); // Verwenden Sie ein Ref für den Marker
   const mapRef = useRef(null);
+  const leafletMapRef = useRef(null);
 
   const handleGuessed = () => {
     if (markerRef.current !== null) {
@@ -39,13 +40,12 @@ const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
       setUserCoords(coords);
       setGuessed(true);
     }
-  }
-
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined" && L) {  // ✅ Sicherstellen, dass window existiert
       loadGoogleMapsScript(() => {
-        if (!map) {
+        if (!leafletMapRef.current) {  // Überprüfen, ob die Karte bereits existiert
           const newMap = L.map(mapRef.current, {
             dragging: true,
             doubleClickZoom: true,
@@ -58,7 +58,16 @@ const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
 
           L.gridLayer.googleMutant({ type: "hybrid", disableDefaultUI: true, zoomControl: false }).addTo(newMap);
 
-          setMap(newMap);
+          setMap(newMap); // Speichere die Karte im Zustand
+          leafletMapRef.current = newMap; // Speichere die Karte in der Referenz
+        } else {
+          let mapy = leafletMapRef.current;
+            // Entferne alle bestehenden Marker und Linien
+            mapy.eachLayer((layer) => {
+             if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                mapy.removeLayer(layer);
+              }
+        });
         }
       });
     }
@@ -79,12 +88,9 @@ const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
           iconUrl: "/leaflet/marker_2.png",
           iconSize: (pro ? [30, 38] : [35, 41]),
           iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41],
         });
 
-        const newMarker = L.marker([lat, lng], { icon: markerIcon })
-          .addTo(map)
+        const newMarker = L.marker([lat, lng], { icon: markerIcon }).addTo(map);
 
         // Speichere den neuen Marker im Ref
         markerRef.current = newMarker;
@@ -93,10 +99,7 @@ const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
         setCoords({ lat, lng });
       });
     }
-  }, [map, setGuessed]);
-
-
-  console.log("Coords update:", coords);
+  }, [map]);
 
   // Überwache die Größe des Containers und passe die Karte an
   useEffect(() => {
@@ -127,7 +130,6 @@ const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
         className={`h-[35vh] w-[35vw] opacity-75 transition-all ${pro ? `duration-100`: `duration-300`} group-hover:h-[55vh] group-hover:w-[70vw] group-hover:opacity-100 border-none focus:border-none`}
       ></div>
       {markerRef.current !== null ? <BTN onClick={() => handleGuessed()} /> : null}
-      
     </div>
   );
 };
@@ -138,6 +140,6 @@ const BTN = ({ onClick }) => {
       Guess
     </button>
   );
-}
+};
 
 export default MapWithStreetView;
