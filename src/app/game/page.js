@@ -5,6 +5,9 @@ import { createMapURL } from "./_utilities";
 import Map from "./components/Map";
 import StreetView from "./components/StreetView";
 import Solution from "./components/Solution";
+import {BrowserView, isMobile, MobileView} from 'react-device-detect';
+import MobileMap from "./components/MapMobile";
+
 
 export default function Game() {
     const [data, setData] = useState(createMapURL());
@@ -49,10 +52,10 @@ const Guessing = ({ setGuessed, setCoords, url }) => {
     return (
         <div className="flex flex-col items-center w-full h-screen overflow-hidden">
             <div>
-                <StreetView url={url} />
-                <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
-                    <Map setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
-                </div>
+                <StreetView url={url} mobile={isMobile} />
+
+                <MapContainer setGuessed={setGuessed} setCoords={setCoords} mobile={isMobile} />
+
             </div>
         </div>
     )
@@ -64,4 +67,20 @@ const Guessed = ({ setGuessed, userCoords, solutionCoords, handleGuessed }) => {
             <Solution userCoords={userCoords} solutionCoords={solutionCoords} handleclick={() => handleGuessed()} />
         </>
     )
+}
+
+const MapContainer = ({ setGuessed, setCoords, mobile }) => {
+    if(true) {
+        return (
+            <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
+                <MobileMap setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
+            </div>
+        )
+    } else {
+        return (
+            <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
+                <Map setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
+            </div>
+        )
+    }
 }

@@ -52,9 +52,7 @@ const Solution = ({ pro = false, userCoords, solutionCoords, handleclick }) => {
           const userMarkerIcon = new L.Icon({
             iconUrl: "/leaflet/marker_2.png",
             iconSize: (pro ? [30, 38] : [35, 41]),
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
+            iconAnchor: [18, 41],
           });
 
           L.marker([userCoords.lat, userCoords.lng], { icon: userMarkerIcon }).addTo(map);
@@ -65,9 +63,7 @@ const Solution = ({ pro = false, userCoords, solutionCoords, handleclick }) => {
           const solutionMarkerIcon = new L.Icon({
             iconUrl: "/leaflet/marker_2.png",
             iconSize: (pro ? [30, 38] : [35, 41]),
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
+            iconAnchor: [18, 41],
           });
 
           L.marker([solutionCoords.lat, solutionCoords.lng], { icon: solutionMarkerIcon }).addTo(map);
@@ -106,14 +102,12 @@ const Solution = ({ pro = false, userCoords, solutionCoords, handleclick }) => {
 };
 
 function setMapView(distance, map, userCoords, solutionCoords) {
-  const animationType = distance < 30 ? "point" : distance < 100 ? "near" : "far";
 
-  if (animationType === "point") {
-    map.setView([solutionCoords.lat, solutionCoords.lng], 14);
-  } else {
-    map.setView([userCoords.lat, userCoords.lng], 12);
-    map.flyTo([solutionCoords.lat, solutionCoords.lng], 6, { duration: 3.5 });
-  }
+  map.setView([userCoords.lat, userCoords.lng], 12);
+
+  let bounds = new L.LatLngBounds([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]);
+  map.flyToBounds(bounds, { padding: [30, 30]});
+
 }
 
 export default Solution;

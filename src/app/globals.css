@@ -4,3 +4,15 @@ iframe {
     border: none;
     outline: none;
 }
+
+html, body {
+    overscroll-behavior: none; /* Verhindert seltsames Scroll-Verhalten auf Mobilgeräten */
+    touch-action: manipulation; /* Optimiert für Touch */
+}
+
+#map {
+  max-width: 100%; /* Verhindert, dass sie größer als der Container wird */
+  max-height: 100%; /* Setzt eine Begrenzung */
+  overflow: hidden; /* Stoppt das Ausdehnen */
+  position: relative; /* Sorgt dafür, dass Leaflet nicht ausbricht */
+}

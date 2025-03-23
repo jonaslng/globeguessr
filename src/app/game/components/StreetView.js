@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function StreetView({ url }) {
+export default function StreetView({ url, mobile }) {
     const [isClient, setIsClient] = useState(false);
 
 
@@ -21,7 +21,7 @@ export default function StreetView({ url }) {
                         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
                         style={{
                             width: "100vw",
-                            height: "calc(100vh + 300px)",
+                            height: (mobile ? "calc(100vh + 260px)" : "calc(100vh + 300px)"),
                             zIndex: 100,
                             transform: "translateY(-280px)",
                             overflow: "hidden",
