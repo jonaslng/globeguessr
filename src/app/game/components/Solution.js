@@ -1,113 +1,94 @@
 "use client";  // 💡 Next.js: Code wird nur im Client ausgeführt
 
-import { useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
+import { useMapEvents } from "react-leaflet";
 import { getDistanceInKm } from "../_utilities";
 
-// ✅ Leaflet wird nur im Client geladen
-const L = typeof window !== "undefined" ? require("leaflet") : null;
+// Dynamische Imports für Leaflet-Komponenten
+const MapContainer = dynamic(() => import("react-leaflet").then((module) => module.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((module) => module.TileLayer),{ ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((module) => module.Marker),{ ssr: false });
+const Polyline = dynamic(() => import("react-leaflet").then((module) => module.Polyline),{ ssr: false });
 
-if (L) {
-  require("leaflet.gridlayer.googlemutant"); // Importieren des Plugins
+
+// MAP COMPONENT FOR ADDITIONAL FUNCTIONALITY
+const MapMeta = ({ bounds }) => {
+  const map = useMapEvents({
+
+  });
+
+  // Loading the complete map
+  useEffect(() => {
+    map.invalidateSize();
+    
+    // Timer zum mehrfachen Nachladen der Karte (hilft bei langsamen Verbindungen)
+    const timers = [100, 500, 1000, 2000].map(ms => 
+      setTimeout(() => map.invalidateSize(), ms)
+    );
+    
+    return () => timers.forEach(timer => clearTimeout(timer));
+  }, [map]);
+  return null;
 }
 
-const Solution = ({ pro = false, userCoords, solutionCoords, handleclick }) => {
-  const mapRef = useRef(null); // Referenz für den Container
-  const leafletMapRef = useRef(null); // Referenz für die Leaflet-Karte
+
+// MAP COMPONENT
+const Solution = ({ userCoords, solutionCoords, handleclick }) => {
+  const mapRef = useRef(null);
+  const [markerIcon, setMarkerIcon] = useState(null);
+  const [bounds, setBounds] = useState(null);
   const distance = getDistanceInKm([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]);
 
-  console.log(distance);
-
+  // Load the marker icon
   useEffect(() => {
-    if (typeof window !== "undefined" && L) {
-      if (!leafletMapRef.current) {
-        // Initialisiere die Karte nur, wenn sie noch nicht existiert
-        const newMap = L.map(mapRef.current, {
-          dragging: true,
-          doubleClickZoom: true,
-          keyboard: true,
-          zoom: 2,
-          attributionControl: false,
-          zoomControl: false,
-          worldCopyJump: true,
-        });
-        setMapView(distance, newMap, userCoords, solutionCoords);
-
-        L.gridLayer.googleMutant({ type: "hybrid", disableDefaultUI: true, zoomControl: false }).addTo(newMap);
-
-        leafletMapRef.current = newMap; // Speichere die Karte in der Referenz
-        
-      } else {
-        const map = leafletMapRef.current;
-
-        // Entferne alle bestehenden Marker und Linien
-        map.eachLayer((layer) => {
-          if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-            map.removeLayer(layer);
-          }
-        });
-
-        // Marker für die Benutzerkoordinaten hinzufügen
-        if (userCoords) {
-          const userMarkerIcon = new L.Icon({
-            iconUrl: "/leaflet/marker_2.png",
-            iconSize: (pro ? [30, 38] : [35, 41]),
-            iconAnchor: [18, 41],
-          });
-
-          L.marker([userCoords.lat, userCoords.lng], { icon: userMarkerIcon }).addTo(map);
-        }
-
-        // Marker für die Lösung hinzufügen
-        if (solutionCoords) {
-          const solutionMarkerIcon = new L.Icon({
-            iconUrl: "/leaflet/marker_2.png",
-            iconSize: (pro ? [30, 38] : [35, 41]),
-            iconAnchor: [18, 41],
-          });
-
-          L.marker([solutionCoords.lat, solutionCoords.lng], { icon: solutionMarkerIcon }).addTo(map);
-        }
-
-        // Linie zwischen den beiden Markern hinzufügen
-        if (userCoords && solutionCoords) {
-          const line = L.polyline(
-            [[userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]],
-            { color: "red", weight: 3, opacity: 0.8 }
-          );
-          line.addTo(map);
-        }
-
-        setMapView(distance, map, userCoords, solutionCoords);
-      }
-    }
-  }, [userCoords, solutionCoords, pro]);
+    import('leaflet').then(L => {
+      setMarkerIcon(L.icon({
+        iconUrl: "/leaflet/marker_2.png",
+        iconSize: [30, 41],
+        iconAnchor: [12, 41],
+      }));
+      let bounds = L.latLngBounds([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng])
+      setInterval(() => mapRef.current.flyToBounds(bounds, {padding: [20, 20]}), 300);
+    });
+  }, []);
 
   return (
-    <div className="flex h-[100vh] flex-col w-full items-center justify-center bg-[rgba(20,20,20,0.9)]">
+    <div className="w-[100vw] h-[100vh] flex flex-col items-center justify-center bg-[rgba(20,20,20,0.9)]">
       <p className="mb-[20px] font-bold text-white text-2xl">Dein Tipp war {Math.floor(distance).toString()}km entfernt</p>
       <div
-        ref={mapRef}
-        id="map"
-        className={`w-[80vw] h-[70vh] border-none focus:border-none`}
-      ></div>
-      <button
-        className="cursor-pointer mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-        onClick={() => handleclick()}
+        className="flex flex-col items-center justify-center"
       >
-        Weiter
-      </button>
+        <MapContainer
+          center={[userCoords.lat, userCoords.lng]}
+          ref={mapRef}
+          zoom={13}
+          attributionControl={false}
+          zoomControl={false}
+          className="h-[70vh] w-[80vw] border-none focus:border-none"
+        >
+          <TileLayer
+            noWrap={true}
+            url="https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&language=de"
+          />
+
+          <Marker position={[userCoords.lat, userCoords.lng]} icon={markerIcon} />
+          <Marker position={[solutionCoords.lat, solutionCoords.lng]} icon={markerIcon} />
+          <Polyline positions={[[userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]]} color="red" weight={3} opacity={0.8} />
+          
+          <MapMeta bounds={bounds} />
+        </MapContainer>
+
+        <button
+          onClick={() => handleclick()}
+          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mt-[20px]"
+        >
+          Weiter
+        </button>
+      </div>
     </div>
   );
 };
-
-function setMapView(distance, map, userCoords, solutionCoords) {
-
-  map.setView([userCoords.lat, userCoords.lng], 12);
-
-  let bounds = new L.LatLngBounds([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]);
-  map.flyToBounds(bounds, { padding: [30, 30]});
-
-}
 
 export default Solution;

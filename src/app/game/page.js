@@ -70,9 +70,9 @@ const Guessed = ({ setGuessed, userCoords, solutionCoords, handleGuessed }) => {
 }
 
 const MapContainer = ({ setGuessed, setCoords, mobile }) => {
-    if(true) {
+    if(mobile) {
         return (
-            <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
+            <div className="left-0 bottom-0 fixed">
                 <MobileMap setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
             </div>
         )

@@ -16,3 +16,6 @@ html, body {
   overflow: hidden; /* Stoppt das Ausdehnen */
   position: relative; /* Sorgt dafür, dass Leaflet nicht ausbricht */
 }
+.leaflet-container {
+  z-index: 0;
+}

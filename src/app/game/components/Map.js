@@ -1,144 +1,120 @@
 "use client";  // 💡 Next.js: Code wird nur im Client ausgeführt
 
-import { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
+import { useMapEvents } from "react-leaflet";
 
-// ✅ Leaflet wird nur im Client geladen
-const L = typeof window !== "undefined" ? require("leaflet") : null;
+// Dynamische Imports für Leaflet-Komponenten
+const MapContainer = dynamic(() => import("react-leaflet").then((module) => module.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((module) => module.TileLayer),{ ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((module) => module.Marker),{ ssr: false });
 
-if (L) {
-  require("leaflet.gridlayer.googlemutant"); // Importieren des Plugins
+
+// MAP COMPONENT FOR ADDITIONAL FUNCTIONALITY
+const MapMeta = ({ setGuessed, setUserCoords, mapRef, setMarker, setCoords }) => {
+  const map = useMapEvents({
+    click(e) {
+      // SET MARKER ON MAP WHEN CLICKED
+      const { lat, lng } = e.latlng;
+      setMarker([lat, lng]);
+      setCoords({lat, lng});
+    }
+  });
+
+  // Loading the complete map
+  useEffect(() => {
+    map.invalidateSize();
+    
+    // Timer zum mehrfachen Nachladen der Karte (hilft bei langsamen Verbindungen)
+    const timers = [100, 500, 1000, 2000].map(ms => 
+      setTimeout(() => map.invalidateSize(), ms)
+    );
+    
+    return () => timers.forEach(timer => clearTimeout(timer));
+  }, [map]);
+  return null;
 }
 
-const loadGoogleMapsScript = (callback) => {
-  const existingScript = document.getElementById('googleMaps');
 
-  if (!existingScript) {
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
-    script.id = 'googleMaps';
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      if (callback) callback();
-    };
-  }
-
-  if (existingScript && callback) callback();
-};
-
-const MapWithStreetView = ({ setGuessed, setUserCoords, pro = false }) => {
-  const [map, setMap] = useState(null);
-  const [coords, setCoords] = useState(null);
-  const markerRef = useRef(null); // Verwenden Sie ein Ref für den Marker
+// MAP COMPONENT
+const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
   const mapRef = useRef(null);
-  const leafletMapRef = useRef(null);
+  const containerRef = useRef(null);
+  const markerRef = useRef(null);
+  const [marker, setMarker] = useState(null);
+  const [markerIcon, setMarkerIcon] = useState(null);
+  const [coords, setCoords] = useState(null);
 
-  const handleGuessed = () => {
-    if (markerRef.current !== null) {
-      map.removeLayer(markerRef.current);
-      setUserCoords(coords);
-      setGuessed(true);
+ // Handling the actions if user guesses
+ let handleGuessed = () => {
+  if(marker) {
+    mapRef.current.removeLayer(markerRef.current);
+    setUserCoords(coords);
+    setGuessed(true);
+    }
+  } 
+
+  // Handling the transition of the map container
+  const handleMouseEnter = () => {
+    // Mehrfach invalidateSize aufrufen, um sicherzustellen, dass die Karte während der Transition aktualisiert wird
+    if (mapRef.current) {
+      const map = mapRef.current;
+      map.invalidateSize();
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+  };
+  const handleMouseLeave = () => {
+    if (mapRef.current) {
+      const map = mapRef.current;
+      map.invalidateSize();
+      setTimeout(() => map.invalidateSize(), 201); // Nach der Transition
     }
   };
 
+  // Load the marker icon
   useEffect(() => {
-    if (typeof window !== "undefined" && L) {  // ✅ Sicherstellen, dass window existiert
-      loadGoogleMapsScript(() => {
-        if (!leafletMapRef.current) {  // Überprüfen, ob die Karte bereits existiert
-          const newMap = L.map(mapRef.current, {
-            dragging: true,
-            doubleClickZoom: true,
-            keyboard: true,
-            zoom: 2,
-            attributionControl: false,
-            zoomControl: false,
-            worldCopyJump: true,
-          }).setView([20, 0], 2);
-
-          L.gridLayer.googleMutant({ type: "hybrid", disableDefaultUI: true, zoomControl: false }).addTo(newMap);
-
-          setMap(newMap); // Speichere die Karte im Zustand
-          leafletMapRef.current = newMap; // Speichere die Karte in der Referenz
-        } else {
-          let mapy = leafletMapRef.current;
-            // Entferne alle bestehenden Marker und Linien
-            mapy.eachLayer((layer) => {
-             if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                mapy.removeLayer(layer);
-              }
-        });
-        }
-      });
-    }
-  }, [map]);
-
-  useEffect(() => {
-    if (map) {
-      map.on("click", (e) => {
-        const { lat, lng } = e.latlng;
-
-        // Entferne den alten Marker, falls er existiert
-        if (markerRef.current) {
-          map.removeLayer(markerRef.current);
-        }
-
-        // Setze einen neuen Marker an die angeklickte Stelle
-        const markerIcon = new L.Icon({
-          iconUrl: "/leaflet/marker_2.png",
-          iconSize: (pro ? [30, 38] : [35, 41]),
-          iconAnchor: [12, 41],
-        });
-
-        const newMarker = L.marker([lat, lng], { icon: markerIcon }).addTo(map);
-
-        // Speichere den neuen Marker im Ref
-        markerRef.current = newMarker;
-
-        // Aktualisiere die Koordinaten
-        setCoords({ lat, lng });
-      });
-    }
-  }, [map]);
-
-  // Überwache die Größe des Containers und passe die Karte an
-  useEffect(() => {
-    const handleResize = () => {
-      if (map) {
-        map.invalidateSize(); // Aktualisiere die Kartengröße
-      }
-    };
-
-    // Füge einen Resize-Observer hinzu
-    const observer = new ResizeObserver(handleResize);
-    if (mapRef.current) {
-      observer.observe(mapRef.current);
-    }
-
-    return () => {
-      if (mapRef.current) {
-        observer.unobserve(mapRef.current);
-      }
-    };
-  }, [map]);
+    import('leaflet').then(L => {
+      setMarkerIcon(L.icon({
+        iconUrl: "/leaflet/marker_2.png",
+        iconSize: [30, 41],
+        iconAnchor: [12, 41],
+      }));
+    });
+  }, []);
 
   return (
-    <div className="flex flex-col items-end justify-around group rounded-md">
-      <div
+    <div
+      ref={containerRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="group flex flex-col"
+    >
+      <MapContainer
+        center={[0, 0]}
         ref={mapRef}
-        id="map"
-        className={`h-[35vh] w-[35vw] opacity-75 transition-all ${pro ? `duration-100`: `duration-300`} group-hover:h-[55vh] group-hover:w-[70vw] group-hover:opacity-100 border-none focus:border-none`}
-      ></div>
-      {markerRef.current !== null ? <BTN onClick={() => handleGuessed()} /> : null}
+        zoom={2}
+        attributionControl={false}
+        className="h-[30vh] w-[30vw] opacity-80 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[75vw] group-hover:opacity-100 border-none focus:border-none"
+      >
+        <TileLayer
+          noWrap={true}
+          url="https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&language=de"
+        />
+        <MapMeta setGuessed={setGuessed} setUserCoords={setUserCoords} setMarker={setMarker} mapRef={mapRef} setCoords={setCoords} />
+        {marker && markerIcon && <Marker position={marker} icon={markerIcon} ref={markerRef} />}
+      </MapContainer>
+      {
+        marker && (
+          <button
+            onClick={() => handleGuessed()}
+            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4"
+          >
+            Guess
+          </button>
+        )
+      }
     </div>
-  );
-};
-
-const BTN = ({ onClick }) => {
-  return (
-    <button onClick={onClick} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 w-full h-[6vh]">
-      Guess
-    </button>
   );
 };
 
