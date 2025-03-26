@@ -41,6 +41,11 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
   const [bounds, setBounds] = useState(null);
   const distance = getDistanceInKm([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]);
 
+  let handleclick2 = () => {
+    setMarkerIcon(null);
+    handleclick();
+  }
+
   // Load the marker icon
   useEffect(() => {
     import('leaflet').then(L => {
@@ -49,14 +54,24 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
         iconSize: [30, 41],
         iconAnchor: [12, 41],
       }));
-      let bounds = L.latLngBounds([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng])
-      setInterval(() => mapRef.current.flyToBounds(bounds, {padding: [20, 20]}), 300);
+      
     });
   }, []);
 
+  let handleMapLoaded = () => {
+    console.log("Start animation")
+    let bounds = L.latLngBounds([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng])
+    
+      setInterval(() => {
+        if(mapRef.current){
+        mapRef.current.flyToBounds(bounds, {padding: [25, 25]})
+        }
+      }, 300);
+
+  }
+
   return (
     <div className="w-[100vw] h-[100vh] flex flex-col items-center justify-center bg-[rgba(20,20,20,0.9)]">
-      <p className="mb-[20px] font-bold text-white text-2xl">Dein Tipp war {Math.floor(distance).toString()}km entfernt</p>
       <div
         className="flex flex-col items-center justify-center"
       >
@@ -66,26 +81,43 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
           zoom={13}
           attributionControl={false}
           zoomControl={false}
-          className="h-[70vh] w-[80vw] border-none focus:border-none"
+          className="h-[100vh] w-[100vw] focus:border-none"
+          whenReady={handleMapLoaded()}
         >
           <TileLayer
             noWrap={true}
             url="https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&language=de"
           />
 
-          <Marker position={[userCoords.lat, userCoords.lng]} icon={markerIcon} />
-          <Marker position={[solutionCoords.lat, solutionCoords.lng]} icon={markerIcon} />
-          <Polyline positions={[[userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]]} color="red" weight={3} opacity={0.8} />
-          
+          {markerIcon && (
+            <>
+              <Marker position={[userCoords.lat, userCoords.lng]} icon={markerIcon} />
+              <Marker position={[solutionCoords.lat, solutionCoords.lng]} icon={markerIcon} />
+            </>
+          )}
+
+          {userCoords && solutionCoords && (
+            <Polyline
+              positions={[
+                [userCoords.lat, userCoords.lng],
+                [solutionCoords.lat, solutionCoords.lng],
+              ]}
+              color="red"
+              weight={3}
+              opacity={0.8}
+            />
+          )}
+
           <MapMeta bounds={bounds} />
         </MapContainer>
 
-        <button
-          onClick={() => handleclick()}
-          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mt-[20px]"
-        >
-          Weiter
-        </button>
+        <div className="absolute bottom-0 bg-[rgba(160,160,160,0.5)] backdrop-blur-md w-[60vw] h-[20vh] mb-[20px] rounded-md flex flex-col items-center justify-center">
+          <p className="text-white font-bold text-2xl">Distance: {Math.floor(distance)} km</p>
+          <button onClick={() => handleclick2()} className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mt-4">
+            Weiter
+          </button>
+        </div>
+
       </div>
     </div>
   );

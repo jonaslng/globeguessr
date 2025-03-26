@@ -33,16 +33,16 @@ export default function Game() {
     }, [guessed]);
 
     let handleGuessed = () => {
+        setStep(0);
+        setGuessed(false);
         console.log("neues Streetview-Bild wird geladen");
         setUserCoords(null);
         setData(createMapURL());
-        setStep(0);
-        setGuessed(false);
     }
 
     return (
         <>
-            {step === 0 ? <Guessing setGuessed={(g) => setGuessed(g)} url={data.url} setCoords={(c) => setUserCoords(c)} /> : <Guessed setGuessed={(g) => setGuessed(g)} userCoords={userCoords} solutionCoords={data} handleGuessed={() => handleGuessed()} />}
+            {step == 0 ? <Guessing setGuessed={(g) => setGuessed(g)} url={data.url} setCoords={(c) => setUserCoords(c)} /> : <Guessed setGuessed={(g) => setGuessed(g)} userCoords={userCoords} solutionCoords={data} handleGuessed={() => handleGuessed()} />}
         </>
     )
 
