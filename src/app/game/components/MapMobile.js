@@ -86,10 +86,10 @@ const MobileMap = ({ setGuessed, setUserCoords}) => {
     >
 
       <div className="flex flex-row">
-        <button className={`text-white ${on ? `bg-cyan-800` : `bg-cyan-600`} mb-[15px] ml-[15px] h-[8vh] w-[9vw] font-bold py-2 px-4 rounded-xl flex items-center justify-center`} onClick={() => setOn(!on)}>
+        <button className={`text-white ${!on ? `bg-[#44444C]` : `bg-[#54545e]`} mb-[15px] ml-[15px] h-[8vh] w-[9vw] font-bold py-2 px-4 rounded-xl flex items-center justify-center`} onClick={() => setOn(!on)}>
           {on ? <TbMapOff size={50} /> : <TbMap size={50} />}
         </button>
-        {marker ? <button className={`text-white ${on ? `bg-green-800` : `bg-green-600`} mb-[15px] ml-[15px] h-[8vh] w-[9vw] font-bold py-2 px-4 rounded-xl flex items-center justify-center`} onClick={handleGuessed}>
+        {marker ? <button className={`text-white ${on ? `bg-[#873F49]` : `bg-[#b3626d]`} mb-[15px] ml-[15px] h-[8vh] w-[9vw] font-bold py-2 px-4 rounded-xl flex items-center justify-center`} onClick={handleGuessed}>
           <TbMapPinPlus size={50} />
         </button> : null}
       </div>

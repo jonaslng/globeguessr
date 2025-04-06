@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "awesome-streetview": "^1.4.2",
+    "firebase": "^11.6.0",
+    "firebase-admin": "^13.2.0",
     "leaflet": "^1.9.4",
     "leaflet.gridlayer.googlemutant": "^0.15.0",
     "next": "15.2.2",
+    "next-auth": "^4.24.11",
     "react": "^19.0.0-rc.1",
     "react-device-detect": "^2.2.3",
     "react-dom": "^19.0.0-rc.1",

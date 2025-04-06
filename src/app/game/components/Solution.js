@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useMapEvents } from "react-leaflet";
 import { getDistanceInKm } from "../_utilities";
+import { useRouter } from "next/navigation";
 
 // Dynamische Imports für Leaflet-Komponenten
 const MapContainer = dynamic(() => import("react-leaflet").then((module) => module.MapContainer), { ssr: false });
@@ -40,6 +41,7 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
   const [markerIcon, setMarkerIcon] = useState(null);
   const [bounds, setBounds] = useState(null);
   const distance = getDistanceInKm([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]);
+  const router = useRouter();
 
   let handleclick2 = () => {
     setMarkerIcon(null);
@@ -59,12 +61,14 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
   }, []);
 
   let handleMapLoaded = () => {
-    console.log("Start animation")
     let bounds = L.latLngBounds([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng])
     
-      setInterval(() => {
-        if(mapRef.current){
-        mapRef.current.flyToBounds(bounds, {padding: [25, 25]})
+      const intervalId = setInterval(() => {
+        if (mapRef.current) {
+          console.log("Start animation");
+          mapRef.current.flyToBounds(bounds, { padding: [25, 25] });
+          mapRef.current.dragging.enable();
+          clearInterval(intervalId); 
         }
       }, 300);
 
@@ -111,11 +115,19 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
           <MapMeta bounds={bounds} />
         </MapContainer>
 
-        <div className="absolute bottom-0 bg-[rgba(160,160,160,0.5)] backdrop-blur-md w-[60vw] h-[20vh] mb-[20px] rounded-md flex flex-col items-center justify-center">
+        <div className="absolute top-0 w-[40vw] h-[10vh] rounded-b-md flex flex-col items-center justify-center bg-[#44444C]">
           <p className="text-white font-bold text-2xl">Distance: {Math.floor(distance)} km</p>
-          <button onClick={() => handleclick2()} className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mt-4">
-            Weiter
-          </button>
+        </div>
+
+        <div className="absolute bottom-0 mb-[30px] rounded-md flex flex-col items-center justify-center">
+          <div className="flex flex-row items-center justify-center">
+            <button onClick={() => router.push("/")} className="bg-[#44444C] hover:bg-[#54545e] cursor-pointer w-[15vw] h-[7vh] font-semibold text-xl rounded-md text-white py-2 px-4 mt-4 mr-[10px]">
+              Beenden
+            </button>
+            <button onClick={() => handleclick2()} className="bg-[#44444C] hover:bg-[#54545e] cursor-pointer w-[15vw] h-[7vh] font-semibold text-xl rounded-md text-white py-2 px-4 mt-4 ml-[10px]">
+              Weiter
+            </button>
+          </div>
         </div>
 
       </div>
