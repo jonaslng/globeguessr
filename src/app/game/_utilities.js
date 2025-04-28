@@ -29,3 +29,24 @@ export function getDistanceInKm([lat1, lng1], [lat2, lng2]) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
+export async function generateCoordsFromMap(mapId) {
+  try {
+    const response = await fetch("/maps/" + mapId + ".json");
+    const data = await response.json();
+
+    const array = data.customCoordinates.map((item) => {
+      const lat = item.lat;
+      const lng = item.lng;
+      const url = `https://www.google.com/maps/embed/v1/streetview?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&location=${lat},${lng}&heading=210&pitch=10&fov=100&pitch=10&language=de`;
+      return { url, lat, lng };
+    });
+
+    array.sort(() => Math.random() - 0.5);
+
+    return array;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return [];
+  }
+}
