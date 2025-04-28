@@ -1,6 +1,7 @@
 import React from 'react';
 import "./globals.css";
 import { AuthProvider } from './context/AuthContext';
+import { Analytics } from "@vercel/analytics/react"
 
 export default function Layout({ children }) {
   return (
@@ -13,6 +14,7 @@ export default function Layout({ children }) {
           <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         </head>
         <body>
+          <Analytics />
           {children}
         </body>
       </html>
