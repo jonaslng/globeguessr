@@ -13,6 +13,16 @@ import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "../app/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+
+import { Badge } from "@/components/ui/badge"
 
 const checkAndCreateUser = async (user) => {
     if (!user) return;
@@ -52,7 +62,7 @@ export default function Home() {
     <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
       <Top user={user} />
 
-
+      <MapsFeatured />
 
       <Bottom />
     </div>
@@ -177,6 +187,82 @@ export default function Home() {
     return (
       <div className="absolute top-0 left-0 w-full h-[10vh] flex flex-row items-center p-[20px]">
         {user ? <AvatarX />  : <Login />}
+      </div>
+    )
+  }
+  const MapsFeatured = () => {
+
+    const mapsFeatured = [
+      {
+        "id": "germany_1",
+        "name": "Deutschland",
+        "description": "Deutschland ist ein Land in Mitteleuropa, das für seine reiche Geschichte, Kultur und Wirtschaft bekannt ist. Es ist das bevölkerungsreichste Land der Europäischen Union und hat eine Vielzahl von Landschaften, von den Alpen im Süden bis zu den Küsten im Norden.",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Flag_of_Germany.svg/2560px-Flag_of_Germany.svg.png",
+        "difficulty": "medium",
+      },
+      {
+        "id": "france_1",
+        "name": "Frankreich",
+        "description": "Frankreich ist ein Land in Westeuropa, das für seine reiche Geschichte, Kultur und Gastronomie bekannt ist. Es ist das drittgrößte Land der Europäischen Union und hat eine Vielzahl von Landschaften, von den Alpen im Osten bis zu den Stränden an der Côte d'Azur im Süden.",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Flag_of_France.svg/2560px-Flag_of_France.svg.png",
+        "difficulty": "medium",
+      },
+      {
+        "id": "italy_1",
+        "name": "Italien",
+        "description": "Italien ist ein Land in Südeuropa, das für seine reiche Geschichte, Kultur und Gastronomie bekannt ist. Es ist das drittgrößte Land der Europäischen Union und hat eine Vielzahl von Landschaften, von den Alpen im Norden bis zu den Stränden an der Küste.",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/2560px-Flag_of_Italy.svg.png",
+        "difficulty": "medium",
+      },
+      {
+        "id": "usa_1",
+        "name": "Vereinigte Staaten",
+        "description": "Die Vereinigten Staaten sind ein Land in Nordamerika, das für seine reiche Geschichte, Kultur und Wirtschaft bekannt ist. Es ist das drittgrößte Land der Welt und hat eine Vielzahl von Landschaften, von den Rocky Mountains im Westen bis zu den Stränden an der Ostküste.",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png",
+        "difficulty": "hard",
+      }
+    ]
+
+
+    return (
+      <div>
+      <Carousel
+      opts={{
+      align: "start",
+      }}
+      className="w-full max-w-sm"
+    >
+      <CarouselContent>
+        {mapsFeatured.map((map) => (
+          <CarouselItem key={map.id} className="w-full h-[80vh] flex flex-col items-center justify-center">
+            <Card className="w-full h-full bg-neutral-800 text-white border border-neutral-700">
+              <CardContent className="flex flex-col items-center justify-center">
+                <img src={map.image} alt={map.name} className="w-full h-[50%] object-cover" />
+                <h2 className="text-xl font-bold mt-4">{map.name}</h2>
+                <Badge
+                  className={" text-white mt-2 "+ (map.difficulty === "easy" ? "bg-green-600" : map.difficulty === "medium" ? "bg-yellow-600" : "bg-red-600")}
+                  size="default"
+                  
+                >
+                  {map.difficulty.charAt(0).toUpperCase() + map.difficulty.slice(1)}
+                </Badge>
+                <p className="text-sm text-neutral-400 mt-2">{map.description}</p>
+                
+                <Button
+                  variant="outline"
+                  className="bg-neutral-900 text-white hover:bg-neutral-800 hover:text-white border-neutral-700 mt-4 cursor-pointer"
+                  onClick={() => window.open(`/game/${map.id}`, "_self")}
+                >
+                  Spielen
+                </Button>
+              </CardContent>
+            </Card>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="bg-neutral-300 border-none" />
+      <CarouselNext className="bg-neutral-300 border-none" />
+    </Carousel>
       </div>
     )
   }
