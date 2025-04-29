@@ -18,8 +18,17 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  const logout = async () => {
+    try {
+      await auth.signOut(); // Beispiel für Firebase
+      console.log("Benutzer wurde erfolgreich ausgeloggt");
+    } catch (error) {
+      console.error("Fehler beim Ausloggen:", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
