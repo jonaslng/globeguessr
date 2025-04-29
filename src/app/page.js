@@ -1,19 +1,46 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { FaGithub, FaUserAlt } from "react-icons/fa";
 import { FaGear } from "react-icons/fa6";
 import { useState } from "react";
 import { useAuth } from "./context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator } from "../components/ui/dropdown-menu";
 import { DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { checkAndCreateUser } from "./game/[id]/page";
-import { auth } from "@/app/firebase";
+import { auth, db } from "../app/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
+const checkAndCreateUser = async (user) => {
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+        if(!user.emailVerified) auth.currentUser.sendEmailVerification();
+
+        await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            createdAt: new Date(),
+            statistics: {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                bestScore: 0,
+                accuracy: 0,
+            },
+            settings: {
+                theme: "dark",
+                mapType: "normal",
+            },
+            achievements: [],
+            friends: []
+        });
+    }
+};
 
 
 export default function Home() {
