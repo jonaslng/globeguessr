@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "../components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FaGithub, FaUserAlt } from "react-icons/fa";
 import { FaGear } from "react-icons/fa6";
 import { useState } from "react";
 import { useAuth } from "./context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator } from "../components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
