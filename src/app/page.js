@@ -24,7 +24,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 
-const checkAndCreateUser = async (user) => {
+export const checkAndCreateUser = async (user) => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
@@ -123,7 +123,7 @@ export default function Home() {
       const { logout } = useAuth();
 
       return (
-        <DropdownMenu>
+        <DropdownMenu className="mr-[20px]">
           <DropdownMenuTrigger asChild>
         <Avatar className="absolute right-0 top-0 m-[20px] cursor-pointer">
           <AvatarImage
@@ -136,7 +136,7 @@ export default function Home() {
           </AvatarFallback>
         </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-neutral-900 text-white border border-neutral-700">
+          <DropdownMenuContent className="w-56 bg-neutral-900 text-white border border-neutral-700 mr-[20px] mt-[10px]">
         <DropdownMenuLabel className="text-neutral-400">{user.displayName}</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-neutral-700" />
         <DropdownMenuItem
