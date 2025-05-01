@@ -1,18 +1,5 @@
-var streetview = require('awesome-streetview')
+// This file contains utility functions for the game
 
-
-export function createMapURL() {
-
-  //THIS IS TO BE EDITED LATER
-  let place = streetview();
-
-  let APIKEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  let lat = place[0];
-  let lng = place[1];
-
-  let url = `https://www.google.com/maps/embed/v1/streetview?key=${APIKEY}&location=${lat},${lng}&heading=210&pitch=10&fov=100&pitch=10&language=de`;
-  return {url: url, lat: lat, lng: lng};
-}
 
 export function getDistanceInKm([lat1, lng1], [lat2, lng2]) {
   const R = 6371; // Erdradius in km
@@ -28,6 +15,14 @@ export function getDistanceInKm([lat1, lng1], [lat2, lng2]) {
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+export function calculatePoints(distanceKm) {
+  const maxPoints = 1000;
+  const scale = 0.0015; // je größer, desto schneller fällt die Punktzahl ab
+
+  const points = Math.round(maxPoints * Math.exp(-scale * distanceKm));
+  return points;
 }
 
 export async function generateCoordsFromMap(mapId) {
@@ -47,6 +42,6 @@ export async function generateCoordsFromMap(mapId) {
     return array;
   } catch (error) {
     console.error("Error fetching data:", error);
-    return [];
+    return "error";
   }
 }

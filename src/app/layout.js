@@ -2,6 +2,8 @@ import React from 'react';
 import "./globals.css";
 import { AuthProvider } from './context/AuthContext';
 import { Analytics } from "@vercel/analytics/react"
+import "@radix-ui/themes/styles.css";
+import { Theme, ThemePanel } from "@radix-ui/themes";
 
 export default function Layout({ children }) {
   return (
@@ -14,8 +16,11 @@ export default function Layout({ children }) {
           <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         </head>
         <body>
-          <Analytics />
-          {children}
+          <Theme>
+            <Analytics />
+
+            {children}
+          </Theme>
         </body>
       </html>
     </AuthProvider>

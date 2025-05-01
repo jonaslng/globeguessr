@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FaGithub, FaUserAlt } from "react-icons/fa";
 import { FaGear } from "react-icons/fa6";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -52,21 +52,59 @@ export const checkAndCreateUser = async (user) => {
     }
 };
 
+const getUserData = async (userId) => {
+  const userRef = doc(db, "users", userId);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+    const userData = userDoc.data();
+    console.log("User data:", userData);
+    return userData;
+  }
+  return null;
+}
+
 
 export default function Home() {
 
   const {user, loading} = useAuth();
+  const [userData, setUserData] = useState(null);
+  const [appLoading, setAppLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const data = await getUserData(user.uid);
+        setUserData(data);
+      }
+    };
 
-  return (
-    <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
-      <Top user={user} />
+    fetchUserData();
+  }, [user])
 
-      <MapsFeatured />
+  useEffect(() => {
+    if(userData !== null && userData !== undefined && !loading) {
+      setAppLoading(false);
+    }
+  }, [loading, userData])
 
-      <Bottom />
-    </div>
-  );
+  if (appLoading) {
+    return (
+      <div>
+        loading...
+      </div>
+    )
+  } else {
+    return (
+      <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
+        <Top user={user} username={userData.name} />
+      
+        <MapsFeatured />
+  
+        <Bottom />
+      </div>
+    );
+  }
+  
 }
 
 
@@ -117,7 +155,7 @@ export default function Home() {
       </div>
     );
   };
-  const Top = ({user}) => {
+  const Top = ({user,username}) => {
 
     const AvatarX = () => {
       const { logout } = useAuth();
@@ -132,16 +170,16 @@ export default function Home() {
             className="w-8 h-8 rounded-full"
           />
           <AvatarFallback className="bg-neutral-800 text-white">
-            {user.displayName.charAt(0)}
+            {username.charAt(0)}
           </AvatarFallback>
         </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 bg-neutral-900 text-white border border-neutral-700 mr-[20px] mt-[10px]">
-        <DropdownMenuLabel className="text-neutral-400">{user.displayName}</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-neutral-400">{username}</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-neutral-700" />
         <DropdownMenuItem
           className="cursor-pointer group border-none outline-none"
-          onSelect={() => window.open("/account")}
+          onSelect={() => window.location.href = "/account"}
         >
           <DropdownMenuLabel className="text-neutral-300 group-hover:text-neutral-300 cursor-pointer flex flex-row items-center">
             <FaUserAlt className="mr-3" />
@@ -251,7 +289,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   className="bg-neutral-900 text-white hover:bg-neutral-800 hover:text-white border-neutral-700 mt-4 cursor-pointer"
-                  onClick={() => window.open(`/game/${map.id}`, "_self")}
+                  onClick={() => window.open(`/game/${map.id}?steps=3`, "_self")}
                 >
                   Spielen
                 </Button>

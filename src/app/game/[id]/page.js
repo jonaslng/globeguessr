@@ -7,7 +7,7 @@ import Solution from "../components/Solution";
 import {BrowserView, isMobile, MobileView} from 'react-device-detect';
 import MobileMap from "../components/MapMobile";
 import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "next/navigation"; // Korrigiere den Import von useRouter
+import { useParams, useRouter, useSearchParams } from "next/navigation"; // Korrigiere den Import von useRouter
 import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 
 import { auth } from "@/app/firebase";
@@ -57,24 +57,39 @@ const checkAndCreateUser = async (user) => {
 };
 
 
-export default function Game({ params }) {
-    const unwrappedParams = use(params);
+export default function Game() {
     const [userCoords, setUserCoords] = useState(null);
     const [guessed, setGuessed] = useState(false);
     const [step, setStep] = useState(0);
     const [mapData, setMapData] = useState(null);
     const [mapNr, setMapNr] = useState(0);
+    const [stepNr, setStepNr] = useState(1);
+    const [error, setError] = useState(null);
+
+    const params = useParams();
+    const searchParams = useSearchParams();
+
+    console.log("params", params);
+    console.log("searchParams", searchParams);
+
+    let gameData = {
+        mapId: params.id,
+        steps: (searchParams.get("steps") == null ? 3 : searchParams.get("steps")),
+    }
 
     const { user, loading } = useAuth();
-    const mapId = unwrappedParams.id;
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await generateCoordsFromMap(mapId);
+            const data = await generateCoordsFromMap(gameData.mapId);
+            if(data == "error"){
+                setError(true);
+                return;
+            }
             setMapData(data);
         };
         fetchData();
-    }, [mapId]);
+    }, [gameData.mapId]);
 
     useEffect(() => {
         // Scrollen auf der Seite verhindern
@@ -94,11 +109,27 @@ export default function Game({ params }) {
     }, [guessed]);
 
     let handleGuessed = () => {
-        setStep(0);
-        setGuessed(false);
-        console.log("neues Streetview-Bild wird geladen");
-        setUserCoords(null);
-        setMapNr((mapNr + 1) % mapData.length);
+        if(stepNr == gameData.steps) {
+          //SPIEL IST ZU ENDE
+          console.log("Spiel ist zu Ende");
+          window.location.href = "/game/overview";
+        } else {
+          setStep(0);
+          setGuessed(false);
+          console.log("neues Streetview-Bild wird geladen");
+          setUserCoords(null);
+          setMapNr((mapNr + 1) % mapData.length);
+          setStepNr(stepNr + 1);
+        }
+    }
+
+    if(error){
+
+      return (
+        <div className="flex flex-col items-center justify-center w-full h-screen">
+          <p className="text-2xl font-bold text-red-500">Spiel wurde nicht geladen</p>
+        </div>
+      );
     }
 
     if (!mapData) {
@@ -140,9 +171,7 @@ const UI = ({user, loading }) => {
               </AvatarFallback>
             </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-neutral-900 text-white border border-neutral-700">
-            <DropdownMenuLabel className="text-neutral-400">{user.displayName}</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-neutral-700" />
+              <DropdownMenuContent className="w-56 bg-neutral-900 text-white border border-neutral-700 mr-[2vw]">
             <DropdownMenuItem
               className="cursor-pointer group border-none outline-none"
               onSelect={() => window.open("/account")}

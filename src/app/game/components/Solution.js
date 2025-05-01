@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useMapEvents } from "react-leaflet";
-import { getDistanceInKm } from "../_utilities";
+import { calculatePoints, getDistanceInKm } from "../_utilities";
 import { useRouter } from "next/navigation";
 
 // Dynamische Imports für Leaflet-Komponenten
@@ -41,6 +41,7 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
   const [markerIcon, setMarkerIcon] = useState(null);
   const [bounds, setBounds] = useState(null);
   const distance = getDistanceInKm([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]);
+  const points = calculatePoints(distance);
   const router = useRouter();
 
   let handleclick2 = () => {
@@ -117,6 +118,7 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
 
         <div className="absolute top-0 w-[40vw] h-[10vh] rounded-b-md flex flex-col items-center justify-center bg-[#44444C]">
           <p className="text-white font-bold text-2xl">Distance: {Math.floor(distance)} km</p>
+          <p className="text-neutral-400 font-bold text-2xl">Points: {points}</p>
         </div>
 
         <div className="absolute bottom-0 mb-[30px] rounded-md flex flex-col items-center justify-center">
