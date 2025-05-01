@@ -45,3 +45,35 @@ export async function generateCoordsFromMap(mapId) {
     return "error";
   }
 }
+
+
+export function getAccuracyLabel(accuracyPercent) {
+  if (accuracyPercent >= 95) return "Perfekt";
+  if (accuracyPercent >= 80) return "Sehr gut";
+  if (accuracyPercent >= 60) return "Gut";
+  if (accuracyPercent >= 40) return "Okay";
+  if (accuracyPercent >= 20) return "Schlecht";
+  return "Sehr schlecht";
+}
+
+export function calculateStatistics(userCoords, solutionCoords, statistics){
+  if(statistics == null || statistics == undefined) return;
+
+  let cstatistics = statistics;
+
+  let distance = Math.round(getDistanceInKm([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]));
+  const scale = 0.0015;
+  const accuracy = Math.round(100 * Math.exp(-scale * distance));
+
+  cstatistics.score += calculatePoints(distance);
+
+  cstatistics.steps.push({
+    distance: distance,
+    points: calculatePoints(distance),
+    accuracy: accuracy,
+  });
+
+  cstatistics.accuracy = Math.round(cstatistics.accuracy / accuracy);
+
+  return cstatistics;
+}

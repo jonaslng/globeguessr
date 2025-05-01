@@ -18,13 +18,20 @@ import { Button } from "@/components/ui/button";
 import { CircleUserRound, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
 import { DialogHeader } from "@/components/ui/dialog";
-import { generateCoordsFromMap } from "../_utilities";
+import { calculatePoints, calculateStatistics, generateCoordsFromMap, getAccuracyLabel, getDistanceInKm } from "../_utilities";
 import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { FaUserAlt } from "react-icons/fa";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
+import { TrendingUp } from "lucide-react"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import { SparkLineChart } from '@mui/x-charts/SparkLineChart';
 
 
 
@@ -57,6 +64,7 @@ const checkAndCreateUser = async (user) => {
 };
 
 
+
 export default function Game() {
     const [userCoords, setUserCoords] = useState(null);
     const [guessed, setGuessed] = useState(false);
@@ -68,14 +76,14 @@ export default function Game() {
 
     const params = useParams();
     const searchParams = useSearchParams();
+    const [statistics,setStatistics] = useState({ steps: [], score: 0, accuracy: 0 });
 
-    console.log("params", params);
-    console.log("searchParams", searchParams);
 
     let gameData = {
         mapId: params.id,
         steps: (searchParams.get("steps") == null ? 3 : searchParams.get("steps")),
     }
+    
 
     const { user, loading } = useAuth();
 
@@ -111,9 +119,17 @@ export default function Game() {
     let handleGuessed = () => {
         if(stepNr == gameData.steps) {
           //SPIEL IST ZU ENDE
+          setStatistics(calculateStatistics(userCoords, mapData[mapNr], statistics))
+          console.log("Statistiken: ", statistics);
+          setStep(999);
+          setGuessed(false);
           console.log("Spiel ist zu Ende");
-          window.location.href = "/game/overview";
+          setUserCoords(null);
+          setMapNr(0);
+          
         } else {
+          setStatistics(calculateStatistics(userCoords, mapData[mapNr], statistics))
+          console.log("Statistiken: ", statistics);
           setStep(0);
           setGuessed(false);
           console.log("neues Streetview-Bild wird geladen");
@@ -141,6 +157,8 @@ export default function Game() {
             <UI user={user} loading={loading}/>
             {step === 0 ? (
                 <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} />
+            ) : step === 999 ?(
+                <EndScreen handleclick={() => handleGuessed()} statistics={statistics} />
             ) : (
                 <Guessed setGuessed={(g) => setGuessed(g)} userCoords={userCoords} solutionCoords={mapData[mapNr]} handleGuessed={() => handleGuessed()} />
             )}
@@ -267,4 +285,24 @@ const MapContainer = ({ setGuessed, setCoords, mobile }) => {
             </div>
         )
     }
+}
+
+
+const EndScreen = ({ statistics }) => {
+  let chartData = [];
+  statistics.steps.forEach((step, index) => {
+    chartData.push(step.distance);
+  });
+
+  return (
+    <div>
+
+    <Stack direction="row" sx={{ width: '15vh' }}>
+      <Box sx={{ flexGrow: 1 }}>
+        <SparkLineChart data={chartData} height={100} />
+      </Box>
+    </Stack>
+      
+    </div>
+  )
 }
