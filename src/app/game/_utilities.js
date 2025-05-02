@@ -62,8 +62,7 @@ export function calculateStatistics(userCoords, solutionCoords, statistics){
   let cstatistics = statistics;
 
   let distance = Math.round(getDistanceInKm([userCoords.lat, userCoords.lng], [solutionCoords.lat, solutionCoords.lng]));
-  const scale = 0.0015;
-  const accuracy = Math.round(100 * Math.exp(-scale * distance));
+  const accuracy = Math.round(1000 / calculatePoints(distance));
 
   cstatistics.score += calculatePoints(distance);
 

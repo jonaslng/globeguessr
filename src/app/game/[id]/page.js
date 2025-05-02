@@ -22,21 +22,22 @@ import { calculatePoints, calculateStatistics, generateCoordsFromMap, getAccurac
 import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { FaUserAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaHockeyPuck, FaHome, FaUserAlt } from "react-icons/fa";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { TrendingUp } from "lucide-react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
-import { SparkLineChart } from '@mui/x-charts/SparkLineChart';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MdError } from "react-icons/md";
+import { IoMdCloudDone } from "react-icons/io";
+import { FaCirclePlay } from "react-icons/fa6";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 
 const checkAndCreateUser = async (user) => {
-    if (!user) return;
+    if (!user) return "error";
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) {
@@ -47,11 +48,10 @@ const checkAndCreateUser = async (user) => {
             name: user.displayName,
             email: user.email,
             createdAt: new Date(),
+            xp: 0,
+            level: 1,
             statistics: {
-                gamesPlayed: 0,
-                gamesWon: 0,
-                bestScore: 0,
-                accuracy: 0,
+              games: [],
             },
             settings: {
                 theme: "dark",
@@ -60,8 +60,34 @@ const checkAndCreateUser = async (user) => {
             achievements: [],
             friends: []
         });
-    }
+        return "success";
+    } else return "error"
 };
+
+const uploadUserStatistics = async (user, statistics) => {
+    if (!user) return "error";
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      console.log("UPLOADING USER DATA "+" "+statistics.steps+" "+statistics.score+" "+statistics.accuracy+" "+statistics.distance);
+        const userData = userSnap.data();
+        const games = userData.statistics.games || [];
+        games.push({
+            steps: statistics.steps,
+            score: statistics.score,
+            accuracy: statistics.accuracy,
+            date: new Date(),
+        });
+        await setDoc(userRef, {
+            ...userData,
+            xp: userData.xp + statistics.score,
+            statistics: {
+                games: games,
+            },
+        });
+        return "success";
+    } return "error";
+}
 
 
 
@@ -149,7 +175,11 @@ export default function Game() {
     }
 
     if (!mapData) {
-        return <div>Loading...</div>; // oder ein schöner Spinner
+        return (
+          <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
+            <Skeleton className="bg-neutral-800 h-[30vh] w-[30vw] left-0 bottom-0 fixed mb-[20px] ml-[25px]" />
+          </div>
+        ) // oder ein schöner Spinner
     }
     
     return (
@@ -289,20 +319,141 @@ const MapContainer = ({ setGuessed, setCoords, mobile }) => {
 
 
 const EndScreen = ({ statistics }) => {
-  let chartData = [];
-  statistics.steps.forEach((step, index) => {
-    chartData.push(step.distance);
-  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const uploadStatistics = async () => {
+      setLoading(true);
+      try {
+        if(await uploadUserStatistics(auth.currentUser, statistics) == "error") {
+          setError("Fehler beim Hochladen der Statistiken");
+          setLoading(false);
+          return;
+        } else setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setError("Fehler beim Hochladen der Statistiken");
+        setLoading(false);
+      }
+    };
+
+    if (auth.currentUser) {
+      uploadStatistics();
+    }
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
+      
+
+      <div className="absolute top-0 left-0 w-full flex flex-row items-center justify-center mt-[4vh]">
+        <div className="flex flex-row items-center">
+          <h1 className="text-3xl font-bold text-white mr-[15px]">Spiel beendet</h1>
+          {
+            loading ? (
+              <FaCloudUploadAlt size={30} className="text-neutral-400" />
+            ) : error ? (
+              <></>
+            ) : (
+              <IoMdCloudDone size={30} className="text-green-500" />
+            )
+          }
+        </div>
+      </div>
+
+
+      <Card className="w-[94vw] h-[75vh] bg-neutral-900 border border-none rounded-lg shadow-lg">
+        <CardContent className="flex flex-col items-center justify-center">
+
+            <Tabs className="w-[80vw] mt-[2vh] flex items-center" defaultValue="Übersicht">
+
+              <TabsList className="bg-neutral-800 border-b border-neutral-800 w-[40vw] h-[6vh]">
+
+                <TabsTrigger
+                    className="bg-neutral-800 text-white data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
+                    value="Übersicht"
+                >
+                    Übersicht
+                </TabsTrigger>
+                <TabsTrigger
+                    className="bg-neutral-800 text-white data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
+                    value="Statistiken"
+                >
+                    Statistiken
+                </TabsTrigger>
+            </TabsList>
+            <TabsContent
+                className="bg-neutral-800 text-white"
+                value="Übersicht"
+            >
+                <Overview statistics={statistics} />
+            </TabsContent>
+            <TabsContent
+                className="bg-neutral-800 text-white"
+                value="Statistiken"
+            >
+                <Statistics statistics={statistics} />
+
+            </TabsContent>
+
+
+                
+    </Tabs>
+          
+
+        </CardContent>
+      </Card>
+      <div className="flex flex-row items-center justify-center mt-5 w-screen">
+        <Button onClick={() => window.location.reload()} variant="primary" className="bg-neutral-300 text-neutral-900 hover:bg-neutral-400 border-neutral-700 text-sm cursor-pointer">
+          <FaCirclePlay /> Nochmal Spielen
+        </Button>
+        <Button onClick={() => window.location.href = "/"} variant="primary" className="bg-neutral-300 text-neutral-900 hover:bg-neutral-400 border-neutral-700 text-sm ml-3 cursor-pointer">
+          <FaHome /> Beenden
+        </Button>
+      </div>
+    
+    </div>
+  )
+}
+
+
+const Statistics = ({ statistics }) => {
+
+  let chartData = statistics.steps.map((step, index) => ({
+    name: `Step ${index + 1}`,
+    distance: step.points,
+  }));
 
   return (
     <div>
 
-    <Stack direction="row" sx={{ width: '15vh' }}>
-      <Box sx={{ flexGrow: 1 }}>
-        <SparkLineChart data={chartData} height={100} />
-      </Box>
-    </Stack>
       
+          <ChartContainer className="w-[40vw] h-[30vh] mt-4" config={{ theme: "default", color: "#8884d8" }}>
+            <AreaChart
+              width={300}
+              height={150}
+              data={chartData}
+              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+              <Area type="monotone" dataKey="distance" stroke="#8884d8" fill="#8884d8" />
+            </AreaChart>
+          </ChartContainer>
+    </div>
+  )
+}
+
+const Overview = ({ statistics }) => {
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
+      <h1 className="text-2xl font-bold text-white">Übersicht</h1>
+      <p className="text-lg text-white">Punkte: {statistics.score}</p>
+      <p className="text-lg text-white">Genauigkeit: {getAccuracyLabel(statistics.accuracy)}</p>
+      <p className="text-lg text-white">Entfernung: {statistics.distance} km</p>
     </div>
   )
 }

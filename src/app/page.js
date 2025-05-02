@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/carousel"
 
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const checkAndCreateUser = async (user) => {
     if (!user) return;
@@ -36,11 +37,10 @@ export const checkAndCreateUser = async (user) => {
             name: user.displayName,
             email: user.email,
             createdAt: new Date(),
+            xp: 0,
+            level: 0,
             statistics: {
-                gamesPlayed: 0,
-                gamesWon: 0,
-                bestScore: 0,
-                accuracy: 0,
+              games: [],
             },
             settings: {
                 theme: "dark",
@@ -60,46 +60,59 @@ const getUserData = async (userId) => {
     console.log("User data:", userData);
     return userData;
   }
-  return null;
+  return "error";
 }
 
 
 export default function Home() {
 
-  const {user, loading} = useAuth();
+  const {user, loading, logout} = useAuth();
   const [userData, setUserData] = useState(null);
   const [appLoading, setAppLoading] = useState(true);
 
+  console.log("User:", user);
+  console.log("Loading:", loading);
+  console.log("UserData:", userData);
+
   useEffect(() => {
+    if(loading) return;
     const fetchUserData = async () => {
-      if (user) {
+      try {
         const data = await getUserData(user.uid);
-        setUserData(data);
+        if (data !== "error") {
+          setUserData(data);
+          setAppLoading(false);
+        } else {
+          console.error("Error fetching user data");
+          logout();
+          setAppLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
-
-    fetchUserData();
-  }, [user])
-
-  useEffect(() => {
-    if(userData !== null && userData !== undefined && !loading) {
+    if(user !== null){
+      fetchUserData();
+    } else {
       setAppLoading(false);
+      setUserData("error");
     }
-  }, [loading, userData])
+  }, [loading])
 
-  if (appLoading) {
+
+  if (appLoading || loading) {
     return (
-      <div>
-        loading...
+      <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
+        <Skeleton className="bg-neutral-800 h-[50vh] w-[50vw]" />
       </div>
     )
   } else {
     return (
       <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
-        <Top user={user} username={userData.name} />
-      
+        <Top user={user} username={userData && userData !== "error" ? userData.name : "Fehlgeschlagen"} />
+
         <MapsFeatured />
-  
+
         <Bottom />
       </div>
     );
@@ -199,6 +212,7 @@ export default function Home() {
         </DropdownMenu>
       );
     }
+
     const Login = () => {
       return (
         <Button
