@@ -24,6 +24,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 
 export const checkAndCreateUser = async (user) => {
     if (!user) return;
@@ -109,7 +110,7 @@ export default function Home() {
   } else {
     return (
       <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
-        <Top user={user} username={userData && userData !== "error" ? userData.name : "Fehlgeschlagen"} />
+        <Top user={user} username={userData && userData !== "error" ? userData.name : "Fehlgeschlagen"} xp={userData && userData !== "error" ? userData.xp : 0} />
 
         <MapsFeatured />
 
@@ -168,15 +169,23 @@ export default function Home() {
       </div>
     );
   };
-  const Top = ({user,username}) => {
+  const Top = ({user,username,xp}) => {
 
     const AvatarX = () => {
       const { logout } = useAuth();
 
       return (
-        <DropdownMenu className="mr-[20px]">
+        <div className="flex flex-row items-center justify-between absolute right-0 top-0 m-[20px]">
+          <Badge 
+          variant="outline" 
+          className="mt-[8px] bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 border-none text-white text-sm mb-2 flex flex-row items-center animate-gradient-x rounded-full cursor-pointer hover:scale-110 transition-all duration-300"
+        >
+          <NumberTicker value={xp} className="text-white text-md"/> <p className="mt-[0px]">XP</p>
+        </Badge>
+
+        <DropdownMenu >
           <DropdownMenuTrigger asChild>
-        <Avatar className="absolute right-0 top-0 m-[20px] cursor-pointer">
+        <Avatar className="cursor-pointer ml-[20px]">
           <AvatarImage
             src={user.photoURL}
             alt="Benutzer Avatar"
@@ -210,6 +219,10 @@ export default function Home() {
         </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        
+        
+        </div>
       );
     }
 

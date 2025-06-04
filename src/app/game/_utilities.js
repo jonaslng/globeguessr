@@ -1,4 +1,5 @@
 // This file contains utility functions for the game
+var panorama = require('google-panorama-by-location/node')
 
 
 export function getDistanceInKm([lat1, lng1], [lat2, lng2]) {
@@ -31,6 +32,11 @@ export async function generateCoordsFromMap(mapId) {
     const data = await response.json();
 
     const array = data.customCoordinates.map((item) => {
+      if (!item.lat || !item.lng) {
+        console.error("Invalid coordinates:", item);
+        return null;
+      }
+
       const lat = item.lat;
       const lng = item.lng;
       const url = `https://www.google.com/maps/embed/v1/streetview?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&location=${lat},${lng}&heading=210&pitch=10&fov=100&pitch=10&language=de`;
@@ -38,6 +44,8 @@ export async function generateCoordsFromMap(mapId) {
     });
 
     array.sort(() => Math.random() - 0.5);
+
+    console.log("Verfügbare Panoramen: ", array.length);
 
     return array;
   } catch (error) {
@@ -72,7 +80,7 @@ export function calculateStatistics(userCoords, solutionCoords, statistics){
     accuracy: accuracy,
   });
 
-  cstatistics.accuracy = Math.round(cstatistics.accuracy / accuracy);
+  cstatistics.accuracy = Math.round(statistics.accuracy / accuracy * 100);
 
   return cstatistics;
 }

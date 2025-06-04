@@ -108,7 +108,7 @@ const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
         marker && (
           <button
             onClick={() => handleGuessed()}
-            className="bg-neutral-800 hover:bg-neutral-700 text-white py-2 px-4"
+            className="bg-neutral-800 hover:bg-neutral-700 h-[8vh] text-white py-2 px-4 cursor-pointer transition-all duration-200"
           >
             Guess
           </button>

@@ -33,6 +33,8 @@ import { MdError } from "react-icons/md";
 import { IoMdCloudDone } from "react-icons/io";
 import { FaCirclePlay } from "react-icons/fa6";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { Badge } from "@/components/ui/badge";
 
 
 
@@ -345,7 +347,7 @@ const EndScreen = ({ statistics }) => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
+    <div className="flex flex-col items-center w-full h-screen bg-neutral-900">
       
 
       <div className="absolute top-0 left-0 w-full flex flex-row items-center justify-center mt-[4vh]">
@@ -364,7 +366,7 @@ const EndScreen = ({ statistics }) => {
       </div>
 
 
-      <Card className="w-[94vw] h-[75vh] bg-neutral-900 border border-none rounded-lg shadow-lg">
+      <Card className="w-[94vw] h-[55vh] bg-neutral-900 border border-none shadow-none mt-[10vh]">
         <CardContent className="flex flex-col items-center justify-center">
 
             <Tabs className="w-[80vw] mt-[2vh] flex items-center" defaultValue="Übersicht">
@@ -377,22 +379,16 @@ const EndScreen = ({ statistics }) => {
                 >
                     Übersicht
                 </TabsTrigger>
-                <TabsTrigger
-                    className="bg-neutral-800 text-white data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
-                    value="Statistiken"
-                >
-                    Statistiken
-                </TabsTrigger>
             </TabsList>
             <TabsContent
-                className="bg-neutral-800 text-white"
+                className="bg-neutral-900 text-white"
                 value="Übersicht"
             >
                 <Overview statistics={statistics} />
             </TabsContent>
             <TabsContent
-                className="bg-neutral-800 text-white"
-                value="Statistiken"
+                className="bg-neutral-900 text-white"
+                value="Punkte"
             >
                 <Statistics statistics={statistics} />
 
@@ -405,7 +401,7 @@ const EndScreen = ({ statistics }) => {
 
         </CardContent>
       </Card>
-      <div className="flex flex-row items-center justify-center mt-5 w-screen">
+      <div className="flex flex-row items-center justify-center w-screen">
         <Button onClick={() => window.location.reload()} variant="primary" className="bg-neutral-300 text-neutral-900 hover:bg-neutral-400 border-neutral-700 text-sm cursor-pointer">
           <FaCirclePlay /> Nochmal Spielen
         </Button>
@@ -422,7 +418,7 @@ const EndScreen = ({ statistics }) => {
 const Statistics = ({ statistics }) => {
 
   let chartData = statistics.steps.map((step, index) => ({
-    name: `Step ${index + 1}`,
+    Bild: `Bild ${index + 1}`,
     distance: step.points,
   }));
 
@@ -430,15 +426,16 @@ const Statistics = ({ statistics }) => {
     <div>
 
       
-          <ChartContainer className="w-[40vw] h-[30vh] mt-4" config={{ theme: "default", color: "#8884d8" }}>
+          <ChartContainer className="w-[50vw] h-[30vh] mt-4 bg-neutral-900" config={{ theme: "default", color: "#8884d8" }}>
             <AreaChart
               width={300}
               height={150}
               data={chartData}
               margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+              className="bg-neutral-900"
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+              <XAxis dataKey="Bild" tick={{ fontSize: 10 }} />
               <Area type="monotone" dataKey="distance" stroke="#8884d8" fill="#8884d8" />
             </AreaChart>
           </ChartContainer>
@@ -449,11 +446,15 @@ const Statistics = ({ statistics }) => {
 const Overview = ({ statistics }) => {
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
-      <h1 className="text-2xl font-bold text-white">Übersicht</h1>
-      <p className="text-lg text-white">Punkte: {statistics.score}</p>
-      <p className="text-lg text-white">Genauigkeit: {getAccuracyLabel(statistics.accuracy)}</p>
-      <p className="text-lg text-white">Entfernung: {statistics.distance} km</p>
+    <div className="flex flex-col items-center h-[30vh] w-[40vw] bg-neutral-900">
+      <div className="flex flex-col items-center justify-center w-full h-full">
+        <Badge 
+          variant="outline" 
+          className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 border-none text-white text-sm mb-2 flex flex-row items-center animate-gradient-x"
+        >
+          <NumberTicker value={statistics.score} className="text-white text-xl"/> <p className="mt-[2px]">XP verdient</p>
+        </Badge>
+      </div>
     </div>
   )
 }
