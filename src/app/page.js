@@ -4,121 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FaGithub, FaUserAlt } from "react-icons/fa";
 import { FaGear } from "react-icons/fa6";
-import { useEffect, useState } from "react";
-import { useAuth } from "./context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { FiLogIn, FiLogOut } from "react-icons/fi";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth, db } from "../app/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
-
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton";
-import { NumberTicker } from "@/components/magicui/number-ticker";
-
-export const checkAndCreateUser = async (user) => {
-    if (!user) return;
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-        if(!user.emailVerified) auth.currentUser.sendEmailVerification();
-
-        await setDoc(userRef, {
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            createdAt: new Date(),
-            xp: 0,
-            level: 0,
-            statistics: {
-              games: [],
-            },
-            settings: {
-                theme: "dark",
-                mapType: "normal",
-            },
-            achievements: [],
-            friends: []
-        });
-    }
-};
-
-const getUserData = async (userId) => {
-  const userRef = doc(db, "users", userId);
-  const userDoc = await getDoc(userRef);
-  if (userDoc.exists()) {
-    const userData = userDoc.data();
-    console.log("User data:", userData);
-    return userData;
-  }
-  return "error";
-}
-
+import { useState } from "react";
+import FeaturedMaps from "./game/components/FeaturedMaps";
 
 export default function Home() {
 
-  const {user, loading, logout} = useAuth();
-  const [userData, setUserData] = useState(null);
-  const [appLoading, setAppLoading] = useState(true);
 
-  console.log("User:", user);
-  console.log("Loading:", loading);
-  console.log("UserData:", userData);
-
-  useEffect(() => {
-    if(loading) return;
-    const fetchUserData = async () => {
-      try {
-        const data = await getUserData(user.uid);
-        if (data !== "error") {
-          setUserData(data);
-          setAppLoading(false);
-        } else {
-          console.error("Error fetching user data");
-          logout();
-          setAppLoading(false);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-    if(user !== null){
-      fetchUserData();
-    } else {
-      setAppLoading(false);
-      setUserData("error");
-    }
-  }, [loading])
-
-
-  if (appLoading || loading) {
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
-        <Skeleton className="bg-neutral-800 h-[50vh] w-[50vw]" />
-      </div>
-    )
-  } else {
     return (
       <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
-        <Top user={user} username={userData && userData !== "error" ? userData.name : "Fehlgeschlagen"} xp={userData && userData !== "error" ? userData.xp : 0} />
-
         <MapsFeatured />
 
         <Bottom />
       </div>
     );
-  }
-  
 }
 
 
@@ -130,131 +28,16 @@ export default function Home() {
 
     return (
       <div className="absolute bottom-0 right-0 w-full h-[10vh] flex flex-row items-center p-[20px]">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="bg-neutral-900 text-white hover:bg-neutral-800 hover:text-white border-neutral-700 cursor-pointer"
-            >
-              <FaGear />
-
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent className="sm:max-w-[425px] bg-neutral-900 text-white border-neutral-700">
-            <DialogHeader>
-              <DialogTitle>Einstellungen</DialogTitle>
-              <DialogDescription></DialogDescription>
-            </DialogHeader>
-
-            <DialogFooter>
-              <Button
-                type="submit"
-                className="bg-neutral-800 text-white hover:bg-neutral-700 border-neutral-700"
-                onClick={() => setIsDialogOpen(false)}
-              >
-                Speichern
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Button
-          variant="outline"
-          className="bg-neutral-900 text-white hover:bg-neutral-800 hover:text-white border-neutral-700 ml-[15px] cursor-pointer"
-          onClick={() => window.open("https://github.com/jonaslng/globeguessr", "_blank")}
-        >
-          <FaGithub />
-        </Button>
+      <FaGithub
+        size={30}
+        className="text-[rgba(255,255,255,0.5)] hover:text-[rgba(255,255,255,0.8)] cursor-pointer transition-all duration-250"
+        onClick={() => window.open("https://github.com/jonaslng/globeguessr", "_blank")}
+      />
       </div>
     );
   };
-  const Top = ({user,username,xp}) => {
-
-    const AvatarX = () => {
-      const { logout } = useAuth();
-
-      return (
-        <div className="flex flex-row items-center justify-between absolute right-0 top-0 m-[20px]">
-          <Badge 
-          variant="outline" 
-          className="mt-[8px] bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 border-none text-white text-sm mb-2 flex flex-row items-center animate-gradient-x rounded-full cursor-pointer hover:scale-110 transition-all duration-300"
-        >
-          <NumberTicker value={xp} className="text-white text-md"/> <p className="mt-[0px]">XP</p>
-        </Badge>
-
-        <DropdownMenu >
-          <DropdownMenuTrigger asChild>
-        <Avatar className="cursor-pointer ml-[20px]">
-          <AvatarImage
-            src={user.photoURL}
-            alt="Benutzer Avatar"
-            className="w-8 h-8 rounded-full"
-          />
-          <AvatarFallback className="bg-neutral-800 text-white">
-            {username.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-neutral-900 text-white border border-neutral-700 mr-[20px] mt-[10px]">
-        <DropdownMenuLabel className="text-neutral-400">{username}</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-neutral-700" />
-        <DropdownMenuItem
-          className="cursor-pointer group border-none outline-none"
-          onSelect={() => window.location.href = "/account"}
-        >
-          <DropdownMenuLabel className="text-neutral-300 group-hover:text-neutral-300 cursor-pointer flex flex-row items-center">
-            <FaUserAlt className="mr-3" />
-            Profil
-          </DropdownMenuLabel>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => logout()}
-          className="cursor-pointer group border-none outline-none"
-        >
-          <DropdownMenuLabel className="text-red-400 group-hover:text-red-500 flex flex-row items-center">
-            <FiLogOut className="mr-2" />
-            Ausloggen
-          </DropdownMenuLabel>
-        </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        
-        
-        </div>
-      );
-    }
-
-    const Login = () => {
-      return (
-        <Button
-          variant="outline"
-          className="bg-neutral-900 text-white hover:bg-neutral-800 hover:text-white border-neutral-700 absolute right-0 top-0 m-[20px] cursor-pointer"
-          onClick={() => signIn()}
-        >
-          <FiLogIn />
-          Anmelden
-        </Button>
-      );
-    }
-    const signIn = async () => {
-      const provider = new GoogleAuthProvider();
-        try {
-          await signInWithPopup(auth, provider);
-          await checkAndCreateUser(auth.currentUser);
-        } catch (err) {
-          console.error(err);
-        }
-    }
 
 
-    return (
-      <div className="absolute top-0 left-0 w-full h-[10vh] flex flex-row items-center p-[20px]">
-        {user ? <AvatarX />  : <Login />}
-      </div>
-    )
-  }
   const MapsFeatured = () => {
 
     const mapsFeatured = [
@@ -291,43 +74,9 @@ export default function Home() {
 
     return (
       <div>
-      <Carousel
-      opts={{
-      align: "start",
-      }}
-      className="w-full max-w-sm"
-    >
-      <CarouselContent>
-        {mapsFeatured.map((map) => (
-          <CarouselItem key={map.id} className="w-full h-[80vh] flex flex-col items-center justify-center">
-            <Card className="w-full h-full bg-neutral-800 text-white border border-neutral-700">
-              <CardContent className="flex flex-col items-center justify-center">
-                <img src={map.image} alt={map.name} className="w-full h-[50%] object-cover" />
-                <h2 className="text-xl font-bold mt-4">{map.name}</h2>
-                <Badge
-                  className={" text-white mt-2 "+ (map.difficulty === "easy" ? "bg-green-600" : map.difficulty === "medium" ? "bg-yellow-600" : "bg-red-600")}
-                  size="default"
-                  
-                >
-                  {map.difficulty.charAt(0).toUpperCase() + map.difficulty.slice(1)}
-                </Badge>
-                <p className="text-sm text-neutral-400 mt-2">{map.description}</p>
-                
-                <Button
-                  variant="outline"
-                  className="bg-neutral-900 text-white hover:bg-neutral-800 hover:text-white border-neutral-700 mt-4 cursor-pointer"
-                  onClick={() => window.open(`/game/${map.id}?steps=3`, "_self")}
-                >
-                  Spielen
-                </Button>
-              </CardContent>
-            </Card>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious className="bg-neutral-300 border-none" />
-      <CarouselNext className="bg-neutral-300 border-none" />
-    </Carousel>
+        <button className="w-[15vw] h-[9vh] font-bold bg-neutral-300 text-neutral-700 p-4 rounded-lg mb-4 hover:bg-neutral-400 cursor-pointer transition-colors duration-200" onClick={() => window.location.href = "/game/usa_1"}>
+          Spielen
+        </button>
       </div>
     )
   }
