@@ -19,6 +19,7 @@ const MapMeta = ({ setGuessed, setUserCoords, mapRef, setMarker, setCoords }) =>
       const { lat, lng } = e.latlng;
       setMarker([lat, lng]);
       setCoords({lat, lng});
+      setUserCoords({ lat, lng });
     }
   });
 
@@ -46,14 +47,7 @@ const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
   const [markerIcon, setMarkerIcon] = useState(null);
   const [coords, setCoords] = useState(null);
 
- // Handling the actions if user guesses
- let handleGuessed = () => {
-  if(marker) {
-    mapRef.current.removeLayer(markerRef.current);
-    setUserCoords(coords);
-    setGuessed(true);
-    }
-  } 
+
 
   // Handling the transition of the map container
   const handleMouseEnter = () => {
@@ -95,25 +89,16 @@ const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
         ref={mapRef}
         zoom={2}
         attributionControl={false}
-        className="h-[30vh] w-[30vw] opacity-80 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[75vw] group-hover:opacity-100 border-none focus:border-none"
+        className="h-[30vh] w-[25vw] opacity-50 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[60vw] group-hover:opacity-100 border-none focus:border-none"
       >
         <TileLayer
           noWrap={true}
-          url="https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&language=de"
+          url="https://mt2.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&language=en&client=universal"
         />
         <MapMeta setGuessed={setGuessed} setUserCoords={setUserCoords} setMarker={setMarker} mapRef={mapRef} setCoords={setCoords} />
         {marker && markerIcon && <Marker position={marker} icon={markerIcon} ref={markerRef} />}
       </MapContainer>
-      {
-        marker && (
-          <button
-            onClick={() => handleGuessed()}
-            className="bg-neutral-800 hover:bg-neutral-700 h-[8vh] text-white py-2 px-4 cursor-pointer transition-all duration-200"
-          >
-            Guess
-          </button>
-        )
-      }
+
     </div>
   );
 };

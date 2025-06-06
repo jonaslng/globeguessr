@@ -1,9 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FaGithub, FaUserAlt } from "react-icons/fa";
-import { FaGear } from "react-icons/fa6";
+import { FaGithub } from "react-icons/fa";
 import { useState } from "react";
 import FeaturedMaps from "./game/components/FeaturedMaps";
 

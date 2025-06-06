@@ -39,7 +39,7 @@ export async function generateCoordsFromMap(mapId) {
 
       const lat = item.lat;
       const lng = item.lng;
-      const url = `https://www.google.com/maps/embed/v1/streetview?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&location=${lat},${lng}&heading=210&pitch=10&fov=100&pitch=10&language=de`;
+      const url = `https://www.google.com/maps/embed/v1/streetview?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&location=${lat},${lng}&heading=210&pitch=10&fov=100&pitch=10&language=iw`;
       return { url, lat, lng };
     });
 

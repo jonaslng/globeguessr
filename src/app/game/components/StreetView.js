@@ -28,6 +28,7 @@ export default function StreetView({ url, mobile }) {
                             border: "none",
                             outline: "none"
                         }}
+                        className="inverted"
                         allowFullScreen
                     ></iframe>
                 </div>

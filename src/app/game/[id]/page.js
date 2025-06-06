@@ -1,29 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Map from "../components/Map";
 import StreetView from "../components/StreetView";
 import Solution from "../components/Solution";
-import {BrowserView, isMobile, MobileView} from 'react-device-detect';
+import {isMobile} from 'react-device-detect';
 import MobileMap from "../components/MapMobile";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
-import { TbBrandGoogle, TbBrandGoogleFilled, TbCircleXFilled } from "react-icons/tb";
-import { Button } from "@/components/ui/button";
-import { calculatePoints, calculateStatistics, generateCoordsFromMap } from "../_utilities";
-import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { FaCloudUploadAlt, FaHome, FaUserAlt } from "react-icons/fa";
-import { FiLogIn, FiLogOut } from "react-icons/fi";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IoMdCloudDone } from "react-icons/io";
-import { FaCirclePlay } from "react-icons/fa6";
+import { calculateStatistics, generateCoordsFromMap } from "../_utilities";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NumberTicker } from "@/components/magicui/number-ticker";
-import { Badge } from "@/components/ui/badge";
+import { GuessIsland, Toolbar } from "../components/low_level/game_ui";
 
 
 
@@ -45,7 +32,6 @@ export default function Game() {
         mapId: params.id,
         steps: (searchParams.get("steps") == null ? 3 : searchParams.get("steps")),
     }
-    
 
 
     useEffect(() => {
@@ -100,6 +86,7 @@ export default function Game() {
         }
     }
 
+
     if(error){
 
       return (
@@ -120,7 +107,7 @@ export default function Game() {
     return (
         <>
             {step === 0 ? (
-                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} />
+                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} />
             ) : step === 999 ?(
                 <EndScreen handleclick={() => handleGuessed()} statistics={statistics} />
             ) : (
@@ -131,20 +118,40 @@ export default function Game() {
 
 }
 
-const Guessing = ({ setGuessed, setCoords, url }) => {
+const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords }) => {
+
+
+    const cancelGame = () => {
+        console.log("Spiel wird abgebrochen");
+        window.location.href = "/";
+    }
+    const reloadLocation = () => {
+        console.log("streetview wird neu geladen");
+        let buffer = mapData;
+        setMapData(null);
+        setTimeout(() => setMapData(buffer), 500);
+    }
+
+    
+
+
     return (
         <div className="flex flex-col items-center w-full h-screen overflow-hidden">
             <div>
+                <Toolbar reloadLocation={reloadLocation} cancelGame={cancelGame} />
+
                 <StreetView url={url} mobile={isMobile} />
 
                 <MapContainer setGuessed={setGuessed} setCoords={setCoords} mobile={isMobile} />
+
+                {userCoords ? <GuessIsland onClick={() => setGuessed(true)} /> : null}
 
             </div>
         </div>
     )
 }
 
-const Guessed = ({ setGuessed, userCoords, solutionCoords, handleGuessed }) => {
+const Guessed = ({ userCoords, solutionCoords, handleGuessed }) => {
     return (
         <>
             <Solution userCoords={userCoords} solutionCoords={solutionCoords} handleclick={() => handleGuessed()} />
@@ -161,7 +168,7 @@ const MapContainer = ({ setGuessed, setCoords, mobile }) => {
         )
     } else {
         return (
-            <div className="left-0 bottom-0 fixed mb-[20px] ml-[25px]">
+            <div className="right-0 bottom-0 fixed mb-[20px] mr-[25px]">
                 <Map setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
             </div>
         )
