@@ -89,7 +89,7 @@ const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
         ref={mapRef}
         zoom={2}
         attributionControl={false}
-        className="h-[30vh] w-[25vw] opacity-50 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[60vw] group-hover:opacity-100 border-none focus:border-none"
+        className="h-[30vh] w-[25vw] opacity-50 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[60vw] group-hover:opacity-100 border-none focus:border-none rounded-md shaadow-md"
       >
         <TileLayer
           noWrap={true}

@@ -76,7 +76,12 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
   }
 
   return (
-    <div className="w-[100vw] h-[100vh] flex flex-col items-center justify-center bg-[rgba(20,20,20,0.9)]">
+    <div className="w-[100vw] h-[100vh] flex flex-col items-center justify-center bg-neutral-900">
+
+      <div className="w-[100vw] mb-[40px] flex items-center justify-center text-white text-2xl font-semibold">
+        Entfernung: {distance.toFixed(2)} km | Punkte: {points}
+      </div>
+
       <div
         className="flex flex-col items-center justify-center"
       >
@@ -86,7 +91,7 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
           zoom={13}
           attributionControl={false}
           zoomControl={false}
-          className="h-[100vh] w-[100vw] focus:border-none"
+          className="h-[60vh] w-[65vw] rounded-lg focus:border-none"
           whenReady={handleMapLoaded()}
         >
           <TileLayer
@@ -116,18 +121,14 @@ const Solution = ({ userCoords, solutionCoords, handleclick }) => {
           <MapMeta bounds={bounds} />
         </MapContainer>
 
-        <div className="absolute top-0 w-[40vw] h-[10vh] rounded-b-md flex flex-col items-center justify-center bg-[#44444C]">
-          <p className="text-white font-bold text-2xl">Distance: {Math.floor(distance)} km</p>
-          <p className="text-neutral-400 font-bold text-2xl">Points: {points}</p>
-        </div>
 
-        <div className="absolute bottom-0 mb-[30px] rounded-md flex flex-col items-center justify-center">
+        <div className="mt-[40px] flex flex-col items-center justify-center">
           <div className="flex flex-row items-center justify-center">
-            <button onClick={() => router.push("/")} className="bg-[#44444C] hover:bg-[#54545e] cursor-pointer w-[15vw] h-[7vh] font-semibold text-xl rounded-md text-white py-2 px-4 mt-4 mr-[10px]">
-              Beenden
+            <button onClick={() => router.push("/")} className="bg-neutral-700 hover:bg-neutral-800 cursor-pointer w-[15vw] h-[7vh] font-semibold text-xl rounded-md text-white py-2 px-4 mt-4 mr-[10px]">
+              End Game
             </button>
-            <button onClick={() => handleclick2()} className="bg-[#44444C] hover:bg-[#54545e] cursor-pointer w-[15vw] h-[7vh] font-semibold text-xl rounded-md text-white py-2 px-4 mt-4 ml-[10px]">
-              Weiter
+            <button onClick={() => handleclick2()} className="bg-neutral-700 hover:bg-neutral-800 cursor-pointer w-[15vw] h-[7vh] font-semibold text-xl rounded-md text-white py-2 px-4 mt-4 ml-[10px]">
+              Next
             </button>
           </div>
         </div>

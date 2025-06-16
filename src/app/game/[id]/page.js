@@ -91,7 +91,7 @@ export default function Game() {
 
       return (
         <div className="flex flex-col items-center justify-center w-full h-screen">
-          <p className="text-2xl font-bold text-red-500">Spiel wurde nicht geladen</p>
+          <p className="text-2xl font-bold text-red-500">Game did not load</p>
         </div>
       );
     }
@@ -99,7 +99,7 @@ export default function Game() {
     if (!mapData) {
         return (
           <div className="flex flex-col items-center justify-center w-full h-screen bg-neutral-900">
-            <Skeleton className="bg-neutral-800 h-[30vh] w-[30vw] left-0 bottom-0 fixed mb-[20px] ml-[25px]" />
+            <Skeleton className="bg-neutral-800 h-[30vh] w-[25vw] right-0 bottom-0 fixed mb-[20px] mr-[25px]" />
           </div>
         ) // oder ein schöner Spinner
     }
@@ -107,7 +107,7 @@ export default function Game() {
     return (
         <>
             {step === 0 ? (
-                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} />
+                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} gameData={gameData} step={stepNr} />
             ) : step === 999 ?(
                 <EndScreen handleclick={() => handleGuessed()} statistics={statistics} />
             ) : (
@@ -118,7 +118,7 @@ export default function Game() {
 
 }
 
-const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords }) => {
+const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords, gameData, step}) => {
 
 
     const cancelGame = () => {
@@ -138,7 +138,7 @@ const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords 
     return (
         <div className="flex flex-col items-center w-full h-screen overflow-hidden">
             <div>
-                <Toolbar reloadLocation={reloadLocation} cancelGame={cancelGame} />
+                <Toolbar reloadLocation={reloadLocation} cancelGame={cancelGame} progress={(gameData.steps / step) * 100} />
 
                 <StreetView url={url} mobile={isMobile} />
 
