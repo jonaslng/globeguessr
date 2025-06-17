@@ -10,7 +10,8 @@ import { useParams, useSearchParams } from "next/navigation";
 
 import { calculateStatistics, generateCoordsFromMap } from "../_utilities";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GuessIsland, Toolbar } from "../components/low_level/game_ui";
+import { Toolbar } from "../components/low_level/game_ui";
+import EndScreen from "../components/low_level/EndScreen";
 
 
 
@@ -107,7 +108,7 @@ export default function Game() {
     return (
         <>
             {step === 0 ? (
-                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} gameData={gameData} step={stepNr} />
+                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} gameData={gameData} step={stepNr} onClick={() => setGuessed(true)} />
             ) : step === 999 ?(
                 <EndScreen handleclick={() => handleGuessed()} statistics={statistics} />
             ) : (
@@ -118,7 +119,7 @@ export default function Game() {
 
 }
 
-const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords, gameData, step}) => {
+const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords, gameData, step, onClick}) => {
 
 
     const cancelGame = () => {
@@ -142,9 +143,7 @@ const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords,
 
                 <StreetView url={url} mobile={isMobile} />
 
-                <MapContainer setGuessed={setGuessed} setCoords={setCoords} mobile={isMobile} />
-
-                {userCoords ? <GuessIsland onClick={() => setGuessed(true)} /> : null}
+                <MapContainer setGuessed={setGuessed} setCoords={setCoords} mobile={isMobile} userCoords={userCoords} onClick={onClick} />
 
             </div>
         </div>
@@ -159,7 +158,7 @@ const Guessed = ({ userCoords, solutionCoords, handleGuessed }) => {
     )
 }
 
-const MapContainer = ({ setGuessed, setCoords, mobile }) => {
+const MapContainer = ({ setGuessed, setCoords, mobile, userCoords, onClick }) => {
     if(mobile) {
         return (
             <div className="left-0 bottom-0 fixed">
@@ -168,19 +167,9 @@ const MapContainer = ({ setGuessed, setCoords, mobile }) => {
         )
     } else {
         return (
-            <div className="right-0 bottom-0 fixed mb-[20px] mr-[25px]">
-                <Map setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} />
+            <div className="right-0 bottom-0 fixed mr-[25px]">
+                <Map setGuessed={(g) => setGuessed(g)} setUserCoords={(c) => setCoords(c)} active={userCoords ? true : false} onClick={onClick} />
             </div>
         )
     }
-}
-
-
-const EndScreen = ({ statistics }) => {
-
-  return (
-    <div>
-      Spiel beendet
-    </div>
-  )
 }

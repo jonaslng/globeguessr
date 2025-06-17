@@ -39,7 +39,7 @@ const MapMeta = ({ setGuessed, setUserCoords, mapRef, setMarker, setCoords }) =>
 
 
 // MAP COMPONENT
-const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
+const MapWithStreetView = ({ setGuessed, setUserCoords, active, onClick }) => {
   const mapRef = useRef(null);
   const containerRef = useRef(null);
   const markerRef = useRef(null);
@@ -89,7 +89,7 @@ const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
         ref={mapRef}
         zoom={2}
         attributionControl={false}
-        className="h-[30vh] w-[25vw] opacity-50 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[60vw] group-hover:opacity-100 border-none focus:border-none rounded-md shaadow-md"
+        className="h-[30vh] w-[25vw] opacity-50 transition-all duration-200 group-hover:h-[60vh] group-hover:w-[60vw] group-hover:opacity-100 border-none focus:border-none rounded-md shadow-md"
       >
         <TileLayer
           noWrap={true}
@@ -98,6 +98,16 @@ const MapWithStreetView = ({ setGuessed, setUserCoords}) => {
         <MapMeta setGuessed={setGuessed} setUserCoords={setUserCoords} setMarker={setMarker} mapRef={mapRef} setCoords={setCoords} />
         {marker && markerIcon && <Marker position={marker} icon={markerIcon} ref={markerRef} />}
       </MapContainer>
+      
+      <div className="flex justify-center items-center h-[9vh]">
+        {active ? (
+          <div className="absolute bottom-0 right-0 mb-[1.5vh] w-[25vw] group-hover:w-[60vw] bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 blur-2xl">de</div>
+        ) : null}
+
+        <div className={`${active ? "cursor-pointer shadow-lg bg-gradient-to-r from-purple-700 to-pink-700 opacity-90 hover:opacity-100" : "bg-[rgba(20,20,20,0.8)] cursor-not-allowed"} text-white mr-[25px] w-[25vw] group-hover:w-[60vw] h-[6vh] z-50 border-none focus:border-none transition-all duration-200 rounded-full flex items-center justify-center`} onClick={() => onClick()}>
+          {!active ? "Set your marker" : "Guess"}
+        </div>
+      </div>
 
     </div>
   );
