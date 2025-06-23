@@ -25,6 +25,7 @@ export default function Layout({ children }) {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <title>GlobeGuessr</title>
           <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4710140672364342" crossOrigin="anonymous"></script>
         </head>
         <body className={`${beVietnamPro.variable} antialiased`} >
           <Theme>
@@ -32,7 +33,6 @@ export default function Layout({ children }) {
 
             {children}
           </Theme>
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4710140672364342" crossorigin="anonymous"></script>
         </body>
       </html>
   );
