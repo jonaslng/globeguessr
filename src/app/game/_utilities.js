@@ -64,7 +64,7 @@ export function getAccuracyLabel(accuracyPercent) {
   return "Sehr schlecht";
 }
 
-export function calculateStatistics(userCoords, solutionCoords, statistics){
+export function calculateStatistics(userCoords, solutionCoords, statistics,time){
   if(statistics == null || statistics == undefined) return;
 
   let cstatistics = statistics;
@@ -78,6 +78,7 @@ export function calculateStatistics(userCoords, solutionCoords, statistics){
     distance: distance,
     points: calculatePoints(distance),
     accuracy: accuracy,
+    time: time,
   });
 
   cstatistics.accuracy = Math.round(statistics.accuracy / accuracy * 100);

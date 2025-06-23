@@ -9,9 +9,13 @@ export default function Home() {
 
     return (
       <div className="flex bg-neutral-900 items-center justify-center h-screen w-full">
-        <MapsFeatured />
+      <div className="absolute top-0 left-0 mt-[10px] cursor-pointer hover:scale-105 transition-all duration-200"  >
+        <img src="/logos/logo_blue.svg" alt="Logo" width={130} height={130} />
+      </div>
 
-        <Bottom />
+      <MapsFeatured />
+
+      <Bottom />
       </div>
     );
 }

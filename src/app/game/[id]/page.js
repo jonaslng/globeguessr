@@ -13,8 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toolbar } from "../components/low_level/game_ui";
 import EndScreen from "../components/low_level/EndScreen";
 
-
-
 export default function Game() {
     const [userCoords, setUserCoords] = useState(null);
     const [guessed, setGuessed] = useState(false);
@@ -23,6 +21,9 @@ export default function Game() {
     const [mapNr, setMapNr] = useState(0);
     const [stepNr, setStepNr] = useState(1);
     const [error, setError] = useState(null);
+
+    const [time, setTime] = useState(0);
+    const [paused, setPaused] = useState(false);
 
     const params = useParams();
     const searchParams = useSearchParams();
@@ -67,25 +68,37 @@ export default function Game() {
     let handleGuessed = () => {
         if(stepNr == gameData.steps) {
           //SPIEL IST ZU ENDE
-          setStatistics(calculateStatistics(userCoords, mapData[mapNr], statistics))
+          setStatistics(calculateStatistics(userCoords, mapData[mapNr], statistics,time))
           console.log("Statistiken: ", statistics);
           setStep(999);
           setGuessed(false);
+          setTime(0);
           console.log("Spiel ist zu Ende");
           setUserCoords(null);
           setMapNr(0);
           
         } else {
-          setStatistics(calculateStatistics(userCoords, mapData[mapNr], statistics))
+          setStatistics(calculateStatistics(userCoords, mapData[mapNr], statistics,time))
           console.log("Statistiken: ", statistics);
           setStep(0);
           setGuessed(false);
+          setTime(0);
           console.log("neues Streetview-Bild wird geladen");
           setUserCoords(null);
           setMapNr((mapNr + 1) % mapData.length);
           setStepNr(stepNr + 1);
         }
     }
+
+    useEffect(() => {
+        if (step !== 999) {
+            const interval = setInterval(() => {
+                if (paused) return; // Wenn das Spiel pausiert ist, nicht weitermachen
+                setTime(prevTime => prevTime + 1);
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [userCoords, step, paused]);
 
 
     if(error){
@@ -108,7 +121,7 @@ export default function Game() {
     return (
         <>
             {step === 0 ? (
-                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} gameData={gameData} step={stepNr} onClick={() => setGuessed(true)} />
+                <Guessing setGuessed={(g) => setGuessed(g)} url={mapData[mapNr].url} setCoords={(c) => setUserCoords(c)} setMapData={setMapData} mapData={mapData} userCoords={userCoords} gameData={gameData} step={stepNr} onClick={() => setGuessed(true)} time={time} setPaused={setPaused} />
             ) : step === 999 ?(
                 <EndScreen handleclick={() => handleGuessed()} statistics={statistics} />
             ) : (
@@ -119,7 +132,7 @@ export default function Game() {
 
 }
 
-const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords, gameData, step, onClick}) => {
+const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords, gameData, step, onClick, time, setPaused }) => {
 
 
     const cancelGame = () => {
@@ -139,7 +152,7 @@ const Guessing = ({ setGuessed, setCoords, url, setMapData, mapData, userCoords,
     return (
         <div className="flex flex-col items-center w-full h-screen overflow-hidden">
             <div>
-                <Toolbar reloadLocation={reloadLocation} cancelGame={cancelGame} progress={(gameData.steps / step) * 100} />
+                <Toolbar reloadLocation={reloadLocation} cancelGame={cancelGame} progress={(gameData.steps / step) * 100} time={time} setPaused={setPaused} />
 
                 <StreetView url={url} mobile={isMobile} />
 
