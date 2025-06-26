@@ -32,7 +32,7 @@ export default function Game() {
 
     let gameData = {
         mapId: params.id,
-        steps: (searchParams.get("steps") == null ? 1 : searchParams.get("steps")),
+        steps: (searchParams.get("steps") == null ? 3 : searchParams.get("steps")),
     }
 
 

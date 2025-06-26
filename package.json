@@ -40,6 +40,7 @@
     "next": "^15.3.3",
     "next-auth": "^4.24.11",
     "react": "^19.0.0-rc.1",
+    "react-circle-flags": "^0.0.23",
     "react-device-detect": "^2.2.3",
     "react-dom": "^19.0.0-rc.1",
     "react-globe": "^2.0.1",
